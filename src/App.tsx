@@ -6,6 +6,7 @@ import VariableManager from './components/VariableManager/VariableManager';
 import ResultsDisplay from './components/ResultsDisplay/ResultsDisplay';
 import APIKeyManager from './components/APIKeyManager/APIKeyManager';
 import { useLocalStorage } from './hooks/useLocalStorage';
+import ImportExportModal from './components/ImportExportModal';
 
 function App() {
   const [appState, setAppState] = useLocalStorage<AppState>('imagify-app-state', {
@@ -18,13 +19,13 @@ function App() {
 
   const [showAPISettings, setShowAPISettings] = useState(false);
   const [activeTab, setActiveTab] = useState<'workflow' | 'image' | 'results'>('workflow');
+  const [showImportExport, setShowImportExport] = useState(false);
 
   // Check if API key is configured
   useEffect(() => {
-    if (!appState.apiSettings?.geminiApiKey) {
-      setShowAPISettings(true);
-    }
-  }, [appState.apiSettings]);
+    // Remove automatic popup logic for ImportExportModal and APIKeyManager
+    // Only show popups when user clicks the corresponding button
+  }, []);
 
   const updateAppState = (updates: Partial<AppState>) => {
     console.log('updateAppState called with updates:', updates);
@@ -126,8 +127,8 @@ function App() {
                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full animate-ping"></div>
               </div>
               <div>
-                <h1 className="text-3xl font-bold gradient-text">Imagify</h1>
-                <span className="text-sm text-purple-600/70 font-medium">✨ AI-Powered Image Analysis</span>
+                <h1 className="text-3xl font-bold gradient-text">Imagen.info</h1>
+                <span className="text-sm text-purple-600/70 font-medium">✨ AI-Powered Image Analysis by Carlos Ezequiel Centurion  .</span>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -137,6 +138,14 @@ function App() {
               >
                 <Settings className="h-5 w-5 group-hover:animate-spin transition-transform" />
                 Settings
+              </button>
+              <button
+                onClick={() => setShowImportExport(true)}
+                className="btn btn-ghost btn-sm group"
+                title="Import/Export Config & Workflows"
+              >
+                <Database className="h-5 w-5" />
+                Import/Export
               </button>
             </div>
           </div>
@@ -159,6 +168,14 @@ function App() {
         </div>
       )}
 
+      {showImportExport && (
+        <ImportExportModal
+          appState={appState}
+          setAppState={setAppState}
+          onClose={() => setShowImportExport(false)}
+        />
+      )}
+
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Debug Info for Development */}
         {process.env.NODE_ENV === 'development' && (
@@ -167,8 +184,10 @@ function App() {
             API: {appState.apiSettings ? '✓ Configured' : '❌ Not configured'} |
             <button 
               onClick={() => {
-                localStorage.removeItem('imagify-app-state');
-                window.location.reload();
+                if (window.confirm('Are you sure you want to reset all data? This cannot be undone.')) {
+                  localStorage.removeItem('imagify-app-state');
+                  window.location.reload();
+                }
               }}
               className="ml-2 text-red-600 hover:text-red-800"
             >
