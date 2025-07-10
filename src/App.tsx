@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Settings, ImageIcon, Zap, Database, Trash2 } from 'lucide-react';
 import { AppState, Workflow, ImageAnalysis } from './types';
 import ImageUpload from './components/ImageUpload/ImageUpload';
@@ -22,10 +22,7 @@ function App() {
   const [showImportExport, setShowImportExport] = useState(false);
 
   // Check if API key is configured
-  useEffect(() => {
-    // Remove automatic popup logic for ImportExportModal and APIKeyManager
-    // Only show popups when user clicks the corresponding button
-  }, []);
+  // Note: Removed useEffect as it was not being used
 
   const updateAppState = (updates: Partial<AppState>) => {
     console.log('updateAppState called with updates:', updates);

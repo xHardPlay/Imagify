@@ -10,6 +10,8 @@
     "preview": "vite preview",
     "deploy:vercel": "vercel --prod",
     "deploy:netlify": "netlify deploy --prod --dir=dist",
+    "deploy:cloudflare": "npm run build && wrangler pages deploy dist",
+    "deploy:cloudflare:staging": "npm run build && wrangler pages deploy dist --env staging",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "analyze": "npm run build && npx vite-bundle-analyzer"

@@ -10,6 +10,21 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ai: ['@google/generative-ai'],
+          ocr: ['tesseract.js']
+        }
+      }
+    }
+  },
+  // Base path for Cloudflare Pages
+  base: '/',
+  // Optimize for Cloudflare Pages
+  optimizeDeps: {
+    include: ['react', 'react-dom', '@google/generative-ai', 'tesseract.js']
   }
 })
