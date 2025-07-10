@@ -6,6 +6,7 @@ interface ResultsDisplayProps {
   imageAnalysis: ImageAnalysis;
   onExport: (format: 'json' | 'csv' | 'txt') => void;
   apiSettings: APISettings | null;
+  // Eliminar onRetry
 }
 
 interface ChatMessage {
@@ -212,66 +213,69 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, onExport
           </div>
         </div>
         <div className="card-content">
-          {/* Image Preview */}
-          <div className="mb-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-3">Original Image</h3>
-            <div className="border rounded-lg overflow-hidden max-w-md">
-              <img
-                src={imageAnalysis.imageUrl}
-                alt={imageAnalysis.imageName}
-                className="w-full h-auto"
-              />
+          {/* Nuevo contenedor flex para imagen y resultados */}
+          <div className="flex flex-col md:flex-row gap-8">
+            {/* Imagen a la izquierda */}
+            <div className="mb-6 md:mb-0 md:w-1/2 max-w-md">
+              <h3 className="text-lg font-medium text-gray-900 mb-3">Original Image</h3>
+              <div className="border rounded-lg overflow-hidden">
+                <img
+                  src={imageAnalysis.imageUrl}
+                  alt={imageAnalysis.imageName}
+                  className="w-full h-auto"
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Results */}
-          <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-3">Extracted Variables</h3>
-            {imageAnalysis.results.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="text-gray-400 mb-4">
-                  <ImageIcon className="h-8 w-8 mx-auto" />
-                </div>
-                <p className="text-gray-500">No results available</p>
-                <div className="mt-4 text-xs text-gray-400">
-                  Debug: Results array length = {imageAnalysis.results.length}
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {imageAnalysis.results.map((result, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center mb-2">
-                          <h4 className="font-medium text-gray-900">{result.variableName}</h4>
-                          <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">
-                            {result.source}
-                          </span>
-                          {result.confidence && (
-                            <span className="ml-1 text-xs bg-green-100 text-green-600 px-2 py-1 rounded">
-                              {Math.round(result.confidence * 100)}% confidence
-                            </span>
-                          )}
-                        </div>
-                        <div className="bg-gray-50 rounded p-3">
-                          <pre className="text-sm text-gray-800 whitespace-pre-wrap">
-                            {formatResultValue(result.value)}
-                          </pre>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => copyToClipboard(formatResultValue(result.value))}
-                        className="ml-2 btn btn-ghost btn-sm"
-                        title="Copy to clipboard"
-                      >
-                        <Copy className="h-4 w-4" />
-                      </button>
-                    </div>
+            {/* Resultados a la derecha */}
+            <div className="flex-1">
+              <h3 className="text-lg font-medium text-gray-900 mb-3">Extracted Variables</h3>
+              {imageAnalysis.results.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="text-gray-400 mb-4">
+                    <ImageIcon className="h-8 w-8 mx-auto" />
                   </div>
-                ))}
-              </div>
-            )}
+                  <p className="text-gray-500">No results available</p>
+                  <div className="mt-4 text-xs text-gray-400">
+                    Debug: Results array length = {imageAnalysis.results.length}
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {imageAnalysis.results.map((result, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center mb-2">
+                            <h4 className="font-medium text-gray-900">{result.variableName}</h4>
+                            <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">
+                              {result.source}
+                            </span>
+                            {result.confidence && (
+                              <span className="ml-1 text-xs bg-green-100 text-green-600 px-2 py-1 rounded">
+                                {Math.round(result.confidence * 100)}% confidence
+                              </span>
+                            )}
+                          </div>
+                          <div className="bg-gray-50 rounded p-3">
+                            <pre className="text-sm text-gray-800 whitespace-pre-wrap">
+                              {formatResultValue(result.value)}
+                            </pre>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => copyToClipboard(formatResultValue(result.value))}
+                          className="ml-2 btn btn-ghost btn-sm"
+                          title="Copy to clipboard"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Analysis Status */}
