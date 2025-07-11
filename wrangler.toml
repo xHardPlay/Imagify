@@ -1,21 +1,12 @@
-name = "imagify"
+name = "neurovision"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
-[site]
-bucket = "./dist"
-entry-point = "."
+# Pages configuration
+pages_build_output_dir = "dist"
 
 [env.production]
-name = "imagify"
-route = "imagify.your-domain.com/*"
-zone_id = ""
+name = "neurovision"
 
-[env.staging]
-name = "imagify-staging"
-route = "staging.imagify.your-domain.com/*"
-zone_id = ""
-
-# Build configuration
-[build]
-command = "npm run build" 
+[env.preview]
+name = "neurovision-preview" 

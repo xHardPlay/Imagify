@@ -124,8 +124,8 @@ function App() {
                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full animate-ping"></div>
               </div>
               <div>
-                <h1 className="text-3xl font-bold gradient-text">Imagen.info</h1>
-                <span className="text-sm text-purple-600/70 font-medium">✨ AI-Powered Image Analysis by Carlos Ezequiel Centurion  .</span>
+                <h1 className="text-3xl font-bold gradient-text">Neuro-Vision</h1>
+                <span className="text-sm text-purple-600/70 font-medium">✨ AI-Powered Image Analysis by Carlos Ezequiel Centurion.</span>
               </div>
             </div>
             <div className="flex items-center space-x-4">
