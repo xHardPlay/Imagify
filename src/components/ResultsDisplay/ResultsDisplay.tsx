@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, Copy, ImageIcon, MessageCircle, Send, X } from 'lucide-react';
+import { Download, Copy, ImageIcon, MessageCircle, Send, X, Star, Sparkles } from 'lucide-react';
 import { ImageAnalysis, APISettings } from '../../types';
 
 interface ResultsDisplayProps {
@@ -23,6 +23,12 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, onExport
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isChatLoading, setIsChatLoading] = useState(false);
+  
+  // Improve results state
+  const [showImproveModal, setShowImproveModal] = useState(false);
+  const [improveRequest, setImproveRequest] = useState('');
+  const [isImproving, setIsImproving] = useState(false);
+  const [selectedResult, setSelectedResult] = useState<any>(null);
   
   // Debug logging
   console.log('ResultsDisplay received imageAnalysis:', imageAnalysis);
@@ -155,6 +161,90 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, onExport
     }
   };
 
+  const improveResult = async () => {
+    if (!improveRequest.trim() || !apiSettings?.geminiApiKey || isImproving || !selectedResult) return;
+
+    setIsImproving(true);
+
+    try {
+      // Convert image to base64 for API
+      const response = await fetch(imageAnalysis.imageUrl);
+      const blob = await response.blob();
+      const reader = new FileReader();
+      
+      reader.onload = async () => {
+        const base64 = (reader.result as string).split(',')[1];
+        
+        const prompt = `You are analyzing this image. The current result for "${selectedResult.variableName}" is: "${formatResultValue(selectedResult.value)}". 
+        
+        The user wants to modify this result with the following request: "${improveRequest}".
+        
+        Please provide an improved/modified version of this result based on the user's request. Return only the improved result, nothing else.`;
+        
+        try {
+          const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${apiSettings.model}:generateContent?key=${apiSettings.geminiApiKey}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              contents: [{
+                parts: [
+                  { text: prompt },
+                  {
+                    inline_data: {
+                      mime_type: 'image/jpeg',
+                      data: base64
+                    }
+                  }
+                ]
+              }],
+              generationConfig: {
+                temperature: 0.8,
+                maxOutputTokens: 500,
+              }
+            })
+          });
+
+          if (!apiResponse.ok) {
+            throw new Error('API request failed');
+          }
+
+          const data = await apiResponse.json();
+          const improvedResult = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I could not improve this result.';
+          
+          // Update the result in the imageAnalysis
+          const updatedResults = imageAnalysis.results.map(result => 
+            result === selectedResult 
+              ? { ...result, value: improvedResult, improved: true }
+              : result
+          );
+          
+          // Update the imageAnalysis object
+          Object.assign(imageAnalysis, { results: updatedResults });
+          
+          // Close modal and reset
+          setShowImproveModal(false);
+          setImproveRequest('');
+          setSelectedResult(null);
+          
+          // Show success message
+          alert('Result improved successfully!');
+          
+        } catch (error) {
+          console.error('Improve API error:', error);
+          alert('Sorry, I encountered an error while improving the result. Please try again.');
+        }
+      };
+      
+      reader.readAsDataURL(blob);
+    } catch (error) {
+      console.error('Error processing image for improvement:', error);
+    } finally {
+      setIsImproving(false);
+    }
+  };
+
   const formatResultValue = (value: any) => {
     if (typeof value === 'object') {
       return JSON.stringify(value, null, 2);
@@ -256,6 +346,12 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, onExport
                                 {Math.round(result.confidence * 100)}% confidence
                               </span>
                             )}
+                            {result.improved && (
+                              <span className="ml-1 text-xs bg-yellow-100 text-yellow-600 px-2 py-1 rounded flex items-center">
+                                <Star className="h-3 w-3 mr-1" />
+                                Improved
+                              </span>
+                            )}
                           </div>
                           <div className="bg-gray-50 rounded p-3">
                             <pre className="text-sm text-gray-800 whitespace-pre-wrap">
@@ -263,13 +359,25 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, onExport
                             </pre>
                           </div>
                         </div>
-                        <button
-                          onClick={() => copyToClipboard(formatResultValue(result.value))}
-                          className="ml-2 btn btn-ghost btn-sm"
-                          title="Copy to clipboard"
-                        >
-                          <Copy className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center space-x-1">
+                          <button
+                            onClick={() => copyToClipboard(formatResultValue(result.value))}
+                            className="btn btn-ghost btn-sm"
+                            title="Copy to clipboard"
+                          >
+                            <Copy className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedResult(result);
+                              setShowImproveModal(true);
+                            }}
+                            className="btn btn-ghost btn-sm text-yellow-500 hover:text-yellow-600"
+                            title="Improve with AI"
+                          >
+                            <Star className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -368,6 +476,92 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, onExport
                   className="btn btn-primary btn-md"
                 >
                   <Send className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Improve Results Modal */}
+      {showImproveModal && selectedResult && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div>
+                <h3 className="text-xl font-bold gradient-text">✨ Improve Result with AI</h3>
+                <p className="text-sm text-gray-600">
+                  Modify: <span className="font-medium">{selectedResult.variableName}</span>
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowImproveModal(false);
+                  setImproveRequest('');
+                  setSelectedResult(null);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            {/* Modal Content */}
+            <div className="p-6">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Current Result:
+                </label>
+                <div className="bg-gray-50 rounded-lg p-3 border">
+                  <p className="text-sm text-gray-800">
+                    {formatResultValue(selectedResult.value)}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Your Improvement Request:
+                </label>
+                <textarea
+                  value={improveRequest}
+                  onChange={(e) => setImproveRequest(e.target.value)}
+                  placeholder="Example: 'Change the people to animals', 'Make it more dramatic', 'Add more details about the environment'"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  rows={4}
+                  disabled={isImproving}
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setShowImproveModal(false);
+                    setImproveRequest('');
+                    setSelectedResult(null);
+                  }}
+                  className="btn btn-outline"
+                  disabled={isImproving}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={improveResult}
+                  disabled={!improveRequest.trim() || isImproving}
+                  className="btn btn-primary"
+                >
+                  {isImproving ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Improving...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Improve Result
+                    </>
+                  )}
                 </button>
               </div>
             </div>

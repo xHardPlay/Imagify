@@ -13,6 +13,7 @@ export interface VariableResult {
   value: any;
   confidence?: number;
   source: 'ai' | 'ocr' | 'user';
+  improved?: boolean;
 }
 
 export interface ImageAnalysis {
