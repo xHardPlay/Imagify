@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Settings, ImageIcon, Zap, Database, Trash2 } from 'lucide-react';
 import { AppState, Workflow, ImageAnalysis } from './types';
 import ImageUpload from './components/ImageUpload/ImageUpload';
@@ -7,8 +7,10 @@ import ResultsDisplay from './components/ResultsDisplay/ResultsDisplay';
 import APIKeyManager from './components/APIKeyManager/APIKeyManager';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import ImportExportModal from './components/ImportExportModal';
+import { loadDefaultConfig, shouldLoadDefaults } from './services/defaultConfig';
 
 function App() {
+
   const [appState, setAppState] = useLocalStorage<AppState>('imagify-app-state', {
     workflows: [],
     currentWorkflow: null,
@@ -21,8 +23,24 @@ function App() {
   const [activeTab, setActiveTab] = useState<'workflow' | 'image' | 'results'>('workflow');
   const [showImportExport, setShowImportExport] = useState(false);
 
-  // Check if API key is configured
-  // Note: Removed useEffect as it was not being used
+  // Initialize app with default configuration on first load
+  useEffect(() => {
+    console.log('App loaded with workflows:', appState.workflows.length);
+    console.log('Current workflow:', appState.currentWorkflow?.name);
+    
+    // Check if we need to load defaults
+    if (shouldLoadDefaults()) {
+      console.log('Loading defaults automatically...');
+      const defaultConfig = loadDefaultConfig();
+      console.log('Default config loaded:', defaultConfig);
+      
+      updateAppState({
+        workflows: defaultConfig.workflows,
+        currentWorkflow: defaultConfig.workflows.length > 0 ? defaultConfig.workflows[0] : null,
+        apiSettings: defaultConfig.apiSettings
+      });
+    }
+  }, []);
 
   const updateAppState = (updates: Partial<AppState>) => {
     console.log('updateAppState called with updates:', updates);
@@ -174,24 +192,38 @@ function App() {
       )}
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Debug Info for Development */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mb-4 p-3 bg-gray-100 rounded-lg text-sm">
-            <strong>Debug Info:</strong> {appState.workflows.length} workflows saved | 
-            API: {appState.apiSettings ? '✓ Configured' : '❌ Not configured'} |
-            <button 
-              onClick={() => {
-                if (window.confirm('Are you sure you want to reset all data? This cannot be undone.')) {
-                  localStorage.removeItem('imagify-app-state');
-                  window.location.reload();
-                }
-              }}
-              className="ml-2 text-red-600 hover:text-red-800"
-            >
-              Reset All Data
-            </button>
-          </div>
-        )}
+                 {/* Debug Info - Always Visible */}
+         <div className="mb-4 p-3 bg-gray-100 rounded-lg text-sm">
+           <strong>Debug Info:</strong> {appState.workflows.length} workflows saved | 
+           API: {appState.apiSettings ? '✓ Configured' : '❌ Not configured'} |
+           <button 
+             onClick={() => {
+               if (window.confirm('Are you sure you want to reset all data? This cannot be undone.')) {
+                 localStorage.removeItem('imagify-app-state');
+                 window.location.reload();
+               }
+             }}
+             className="ml-2 text-red-600 hover:text-red-800"
+           >
+             Reset All Data
+           </button>
+           <button 
+             onClick={() => {
+               if (window.confirm('Load default workflows?')) {
+                 const defaultConfig = loadDefaultConfig();
+                 console.log('Loading default config:', defaultConfig);
+                 updateAppState({
+                   workflows: defaultConfig.workflows,
+                   currentWorkflow: defaultConfig.workflows.length > 0 ? defaultConfig.workflows[0] : null,
+                   apiSettings: defaultConfig.apiSettings
+                 });
+               }
+             }}
+             className="ml-2 text-blue-600 hover:text-blue-800"
+           >
+             Load Default Workflows
+           </button>
+         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}

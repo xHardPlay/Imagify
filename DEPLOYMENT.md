@@ -43,7 +43,40 @@ npm run dev
 
 ## 🌐 Production Deployment
 
-### Option 1: Vercel (Recommended)
+### ✅ Option 1: Cloudflare Pages (ACTIVO)
+**Despliegue actual funcionando en producción**
+
+**URL de producción**: https://eafedebe.neurovision-33m.pages.dev
+
+1. **Configuración actual** (`wrangler.toml`):
+```toml
+name = "neurovision"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "dist"
+
+[env.production]
+name = "neurovision"
+
+[env.preview]
+name = "neurovision-preview"
+```
+
+2. **Despliegue automático**:
+```bash
+npm run deploy:cloudflare
+# o manualmente:
+npm run build && wrangler pages deploy dist
+```
+
+3. **Ventajas del despliegue actual**:
+   - ✅ CDN global de Cloudflare
+   - ✅ SSL automático
+   - ✅ Compresión automática
+   - ✅ Caché optimizado
+   - ✅ Escalabilidad automática
+
+### Option 2: Vercel (Alternativa)
 **Free tier available, perfect for React apps**
 
 1. **Prepare for deployment**:

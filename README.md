@@ -1,148 +1,237 @@
-# Imagify - AI-Powered Image Analysis for Designers
+# 🚀 Imagify - AI-Powered Image Analysis & Workflow Management
 
-## Project Overview
+## 📊 Estado del Proyecto
+**Versión**: 0.1.0  
+**Estado**: ✅ **PRODUCCIÓN**  
+**URL**: https://neurovision-33m.pages.dev/
+**Último despliegue**: Exitoso  
+**Fecha**: Agosto/1/2025  
 
-Imagify is a web application designed to empower designers by using AI to analyze images and extract dynamic variables. The app allows users to:
+---
 
-1. **Paste or upload images** from clipboard or file system
-2. **Define custom variables** dynamically (e.g., "color palette", "number of people")
-3. **Extract variable values** automatically using AI and OCR
-4. **Manage workflows** with reusable variable templates
+## 🎯 Descripción del Proyecto
 
-## Features
+Neuro Visión es una aplicación web moderna que utiliza inteligencia artificial para analizar imágenes y extraer información valiosa. Diseñada para creadores de contenido, diseñadores y desarrolladores que necesitan automatizar el análisis de imágenes y generar prompts detallados.
 
-### Core Features
-- **Image Input**: Paste from clipboard or upload files
-- **Dynamic Variables**: Create custom variables for each workflow
-- **AI Analysis**: Extract variable values using Google Gemini API
-- **OCR Integration**: Recognize text and data from images
-- **User API Key**: Users provide their own Google Gemini API key
+### ✨ Características Principales
 
-### Example Workflow
-1. User creates variables: `[color palette]`, `[number of people in photo]`
-2. User pastes an image
-3. AI analyzes the image and returns:
-   - `color palette: blue (#1E3A8A), red (#DC2626)`
-   - `number of people in photo: 5`
+- **🤖 Análisis con IA**: Integración con Google Gemini AI para análisis inteligente de imágenes
+- **📝 OCR Avanzado**: Reconocimiento de texto con Tesseract.js
+- **⚙️ Workflows Personalizables**: Crear y gestionar flujos de trabajo personalizados
+- **🎨 Variables Dinámicas**: Extracción automática de datos específicos
+- **📱 Interfaz Moderna**: Diseño responsive con React y Tailwind CSS
+- **💾 Persistencia Local en modo Pro**: Configuraciones guardadas automáticamente
 
-## Tech Stack
+---
 
-### Frontend
-- **React** with TypeScript
-- **Tailwind CSS** for styling
-- **React DnD** for drag-and-drop functionality
-- **Canvas API** for image handling
+## 🚀 Despliegue Rápido
 
-### Backend/API
-- **Google Gemini API** for AI image analysis
-- **Tesseract.js** for OCR capabilities
-- **Local Storage** for user settings and API keys
+### Opción 1: Acceso Directo
+**Visita**: https://eafedefe.neurovision-33m.pages.dev
 
-### Build Tools
-- **Vite** for fast development and building
-- **ESLint** and **Prettier** for code quality
-
-## Project Structure
-
-```
-imagify/
-├── src/
-│   ├── components/
-│   │   ├── ImageUpload/
-│   │   ├── VariableManager/
-│   │   ├── ResultsDisplay/
-│   │   └── APIKeyManager/
-│   ├── hooks/
-│   │   ├── useImageAnalysis.ts
-│   │   ├── useClipboard.ts
-│   │   └── useLocalStorage.ts
-│   ├── services/
-│   │   ├── geminiAPI.ts
-│   │   ├── ocrService.ts
-│   │   └── imageProcessor.ts
-│   ├── types/
-│   │   └── index.ts
-│   ├── utils/
-│   │   └── colorExtractor.ts
-│   └── App.tsx
-├── public/
-├── package.json
-├── vite.config.ts
-└── README.md
-```
-
-## Getting Started
-
-### Prerequisites
-- Node.js (v18 or higher)
-- npm or yarn
-- Google Gemini API key
-
-### Installation
-
-1. Clone the repository
+### Opción 2: Desarrollo Local
 ```bash
 git clone <repository-url>
 cd imagify
-```
-
-2. Install dependencies
-```bash
 npm install
-```
-
-3. Start development server
-```bash
 npm run dev
 ```
 
-4. Open http://localhost:5173 in your browser
+---
 
-### Configuration
+## 🎨 Workflows Predefinidos
 
-1. **API Key Setup**: Users enter their Google Gemini API key in the app
-2. **Variable Templates**: Create and save variable templates for different workflows
-3. **Image Analysis**: Configure analysis parameters and output formats
+### 1. 🖼️ Image Reversion
+**Propósito**: Análisis para ComfyUI y generación de prompts  
+**Variables**: 
+- Image Title (título descriptivo)
+- Image Prompt (prompt detallado para recrear la imagen)
 
-## API Integration
+### 2. 🎬 IMG2VID
+**Propósito**: Conversión de imagen a video  
+**Variables**:
+- Video Title (título del video)
+- Video Prompt (prompt para generar video con movimientos de cámara)
 
-### Google Gemini API
-- **Endpoint**: Used for image analysis and variable extraction
-- **Authentication**: User-provided API key
-- **Features**: Vision capabilities for image understanding
+### 3. 🎭 Multi Video
+**Propósito**: Crear 5 secuencias de video correlativas  
+**Variables**:
+- Sequences (5 prompts para videos secuenciales)
 
-### OCR Service
-- **Library**: Tesseract.js for text recognition
-- **Use Cases**: Extract text, numbers, and structured data from images
+---
 
-## Development Roadmap
+## 🛠️ Stack Tecnológico
 
-### Phase 1 (MVP)
-- [x] Project setup and documentation
-- [ ] Basic image upload/paste functionality
-- [ ] Variable creation and management
-- [ ] Google Gemini API integration
-- [ ] Simple results display
+### Frontend
+- **React 18.3.1** - Framework principal
+- **TypeScript 5.8.3** - Tipado estático
+- **Tailwind CSS 3.4.17** - Estilos y diseño
+- **Vite 5.0.8** - Build tool y dev server
+- **Lucide React 0.294.0** - Iconografía
 
-### Phase 2 (Enhanced Features)
-- [ ] Advanced variable types (color picker, number ranges)
-- [ ] Batch processing
-- [ ] Export results (JSON, CSV)
-- [ ] Workflow templates
+### APIs y Servicios
+- **Google Generative AI 0.17.2** - Análisis de imágenes con IA
+- **Tesseract.js 5.1.1** - Reconocimiento óptico de caracteres
+- **React Dropzone 14.3.8** - Subida de archivos
 
-### Phase 3 (Advanced Features)
-- [ ] User accounts and cloud storage
-- [ ] Collaboration features
-- [ ] Advanced AI prompts
-- [ ] Integration with design tools
+### Despliegue
+- **Cloudflare Pages** - Hosting y CDN global
+- **Wrangler** - CLI para Cloudflare
 
-## Contributing
+---
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+## 📁 Estructura del Proyecto
 
-## License
+```
+imagify/
+├── 📄 package.json          # Dependencias y scripts
+├── 📄 vite.config.ts        # Configuración de Vite
+├── 📄 wrangler.toml         # Configuración Cloudflare
+├── 📄 tsconfig.json         # Configuración TypeScript
+├── 📄 tailwind.config.js    # Configuración Tailwind
+├── 📁 src/
+│   ├── 📄 App.tsx           # Componente principal (372 líneas)
+│   ├── 📁 components/
+│   │   ├── 📁 ImageUpload/      # Subida de imágenes
+│   │   ├── 📁 VariableManager/  # Gestión de variables
+│   │   ├── 📁 ResultsDisplay/   # Visualización de resultados
+│   │   ├── 📁 APIKeyManager/    # Gestión de API keys
+│   │   └── 📄 ImportExportModal.tsx
+│   ├── 📁 hooks/
+│   │   └── 📄 useLocalStorage.ts
+│   ├── 📁 services/
+│   │   └── 📄 defaultConfig.ts  # Configuración por defecto
+│   ├── 📁 types/
+│   │   └── 📄 index.ts          # Definiciones de tipos
+│   └── 📁 utils/
+├── 📁 public/               # Archivos estáticos
+├── 📁 dist/                 # Build de producción
+└── 📁 cfg/                  # Configuraciones
+```
 
-MIT License - see LICENSE file for details
+---
+
+## 🔧 Configuración
+
+### Variables de Entorno (Opcional)
+```env
+VITE_DEFAULT_API_MODEL=gemini-1.5-flash
+VITE_APP_NAME=Imagify
+```
+
+### API Key de Google Gemini
+1. Visita [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Crea una nueva API key
+3. Configúrala en la aplicación
+
+---
+
+## 📊 Métricas de Rendimiento
+
+### Build de Producción
+- **Tamaño total**: ~240KB (comprimido)
+- **CSS**: 35.86KB (6.08KB gzipped)
+- **JavaScript**: 204.89KB (61.86KB gzipped)
+- **Tiempo de build**: ~2.13 segundos
+
+### Optimizaciones
+- ✅ Code splitting automático
+- ✅ Compresión gzip
+- ✅ Minificación de código
+- ✅ Tree shaking
+- ✅ Lazy loading
+
+---
+
+## 🚀 Scripts Disponibles
+
+```bash
+# Desarrollo
+npm run dev              # Servidor de desarrollo
+npm run preview          # Preview del build
+
+# Build
+npm run build            # Build de producción
+npm run lint             # Linting del código
+
+# Despliegue
+npm run deploy:cloudflare    # Despliegue a Cloudflare Pages
+npm run deploy:vercel        # Despliegue a Vercel
+npm run deploy:netlify       # Despliegue a Netlify
+```
+
+---
+
+## 🔐 Seguridad
+
+### API Keys
+- ✅ Configuración segura de Google Gemini API
+- ✅ Almacenamiento local en localStorage
+- ✅ Validación de credenciales
+- ⚠️ **Nota**: Migrar a variables de entorno en futuras versiones
+
+### Manejo de Datos
+- ✅ Procesamiento local de imágenes
+- ✅ No almacenamiento de imágenes en servidor
+- ✅ Configuración local persistente
+
+---
+
+## 🚨 Problemas Conocidos
+
+### ⚠️ Problemas Menores
+1. **API Key hardcodeada**: Existe una API key en defaultConfig.ts
+2. **Logs de consola**: Muchos console.log en producción
+3. **Validación**: Falta validación robusta de inputs
+
+### 🔧 Mejoras Sugeridas
+1. **Manejo de errores**: Mejorar feedback al usuario
+2. **Loading states**: Mejorar indicadores de carga
+3. **Responsive design**: Optimizar para móviles
+4. **Accesibilidad**: Mejorar navegación por teclado
+
+---
+
+## 📈 Roadmap
+
+### 🎯 Próximas Funcionalidades
+- [ ] Exportación de resultados (JSON, CSV)
+- [ ] Batch processing de múltiples imágenes
+- [ ] Templates de workflows predefinidos
+- [ ] Historial de análisis con búsqueda
+- [ ] Integración con herramientas de diseño
+
+### 🔄 Mejoras Técnicas
+- [ ] Migración a variables de entorno para API keys
+- [ ] Implementación de tests unitarios
+- [ ] Optimización de bundle size
+- [ ] Mejora de UX con animaciones
+- [ ] Implementación de PWA features
+
+---
+
+## 🤝 Contribuir
+
+1. Fork el repositorio
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
+
+---
+
+## 📞 Soporte
+
+- **Documentación**: [DEPLOYMENT.md](DEPLOYMENT.md)
+- **Estado**: [APP_STATUS_LOG.md](APP_STATUS_LOG.md)
+- **Inicio Rápido**: [GETTING_STARTED.md](GETTING_STARTED.md)
+
+---
+
+*Última actualización: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")*

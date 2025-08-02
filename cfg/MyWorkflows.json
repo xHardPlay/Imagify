@@ -1,0 +1,69 @@
+[
+  {
+    "id": "1753556749822",
+    "name": "Imange Reversion",
+    "description": "Ideal for ComfyUI",
+    "variables": [
+      {
+        "name": "Image Tittle",
+        "type": "text",
+        "description": "a tittle for this image",
+        "defaultValue": "",
+        "required": true,
+        "id": "1753556781128"
+      },
+      {
+        "name": "Image Prompt",
+        "type": "text",
+        "description": "describe this image with tons of details as if you were a Reverse Prompt Engineer to be able to create the exact same image using the prompt.",
+        "defaultValue": "",
+        "required": true,
+        "id": "1753556810511"
+      }
+    ],
+    "createdAt": "2025-07-26T19:05:49.822Z",
+    "updatedAt": "2025-07-26T19:19:38.233Z"
+  },
+  {
+    "id": "1753557915232",
+    "name": "IMG2VID",
+    "description": "Image to Video",
+    "variables": [
+      {
+        "name": "Video Tittle",
+        "type": "text",
+        "description": "a tittle for this image",
+        "defaultValue": "",
+        "required": true,
+        "id": "1753557942736"
+      },
+      {
+        "name": "Video Prompt",
+        "type": "text",
+        "description": "i want to create a stunning video from this image , provide a detailed prompt to generate a stunning video from this image. Include Camera movement, composition and every detail you can. Respond in prompt format",
+        "defaultValue": "",
+        "required": true,
+        "id": "1753558002521"
+      }
+    ],
+    "createdAt": "2025-07-26T19:25:15.232Z",
+    "updatedAt": "2025-07-26T19:26:42.521Z"
+  },
+  {
+    "id": "1753562960286",
+    "name": "Multi Video",
+    "description": "Create 5 sequences from the image to video",
+    "variables": [
+      {
+        "name": "Sequences",
+        "type": "text",
+        "description": "i want to create 5 stunning videos from this image , provide a detailed prompt to generate each stunning video from this image. Include Camera movement, composition and every detail you can. Respond in prompt format. Make the videos correlative like part of the same scene.",
+        "defaultValue": "",
+        "required": true,
+        "id": "1753563054948"
+      }
+    ],
+    "createdAt": "2025-07-26T20:49:20.286Z",
+    "updatedAt": "2025-07-26T20:50:54.948Z"
+  }
+]
