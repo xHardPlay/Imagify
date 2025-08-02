@@ -337,17 +337,17 @@ Response format (JSON only):
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="card">
         <div className="card-header">
-          <h2 className="card-title">Upload Image for Analysis</h2>
-          <p className="card-description">
+          <h2 className="card-title text-xl sm:text-2xl lg:text-3xl">Upload Image for Analysis</h2>
+          <p className="card-description text-sm sm:text-base">
             Upload or paste an image to analyze with your "{workflow.name}" workflow
           </p>
         </div>
         <div className="card-content">
           <div 
-            className="upload-zone"
+            className="upload-zone p-6 sm:p-8 lg:p-12"
             onDragOver={(e) => {
               e.preventDefault();
               e.currentTarget.classList.add('drag-over');
@@ -368,26 +368,26 @@ Response format (JSON only):
             <div className="text-center">
               {isProcessing ? (
                 <div className="relative">
-                  <Loader className="h-16 w-16 text-purple-500 mx-auto mb-6 animate-spin" />
-                  <div className="absolute inset-0 h-16 w-16 mx-auto mb-6 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur-lg opacity-30 animate-pulse"></div>
+                  <Loader className="h-12 w-12 sm:h-16 sm:w-16 text-purple-500 mx-auto mb-4 sm:mb-6 animate-spin" />
+                  <div className="absolute inset-0 h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 sm:mb-6 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur-lg opacity-30 animate-pulse"></div>
                 </div>
               ) : (
                 <div className="relative group">
-                  <Upload className="h-16 w-16 text-purple-400 mx-auto mb-6 group-hover:animate-bounce transition-all" />
-                  <div className="absolute inset-0 h-16 w-16 mx-auto mb-6 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-xl group-hover:blur-2xl transition-all"></div>
+                  <Upload className="h-12 w-12 sm:h-16 sm:w-16 text-purple-400 mx-auto mb-4 sm:mb-6 group-hover:animate-bounce transition-all" />
+                  <div className="absolute inset-0 h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 sm:mb-6 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-xl group-hover:blur-2xl transition-all"></div>
                 </div>
               )}
-              <h3 className="text-2xl font-bold gradient-text mb-3">
+              <h3 className="text-lg sm:text-xl lg:text-2xl font-bold gradient-text mb-2 sm:mb-3">
                 {isProcessing ? '🚀 Processing image...' : '📸 Upload your image'}
               </h3>
-              <p className="text-purple-600/70 mb-8 text-lg">
+              <p className="text-purple-600/70 mb-6 sm:mb-8 text-sm sm:text-base lg:text-lg">
                 {isProcessing 
                   ? '🤖 Our AI is analyzing your image, please wait...' 
                   : '✨ Drag and drop an image here, click to select, or press Ctrl+V to paste from clipboard'
                 }
               </p>
               <button 
-                className="btn btn-primary btn-lg group"
+                className="btn btn-primary btn-md sm:btn-lg group w-full sm:w-auto"
                 disabled={isProcessing}
                 onClick={() => {
                   const input = document.createElement('input');
@@ -400,21 +400,21 @@ Response format (JSON only):
                   input.click();
                 }}
               >
-                <Upload className="h-5 w-5 mr-2 group-hover:animate-bounce" />
+                <Upload className="h-4 w-4 sm:h-5 sm:w-5 mr-2 group-hover:animate-bounce" />
                 {isProcessing ? '🔄 Processing...' : '🎯 Choose File'}
               </button>
             </div>
           </div>
           
           {workflow.variables.length === 0 && (
-            <div className="mt-6 p-6 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-2xl shadow-lg">
-              <div className="flex items-center space-x-3">
-                <div className="text-2xl">⚠️</div>
+            <div className="mt-4 sm:mt-6 p-4 sm:p-6 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-2xl shadow-lg">
+              <div className="flex items-start sm:items-center space-x-3">
+                <div className="text-xl sm:text-2xl flex-shrink-0">⚠️</div>
                 <div>
-                  <p className="text-sm font-semibold text-yellow-800 mb-1">
+                  <p className="text-xs sm:text-sm font-semibold text-yellow-800 mb-1">
                     No variables defined!
                   </p>
-                  <p className="text-sm text-yellow-700">
+                  <p className="text-xs sm:text-sm text-yellow-700">
                     🎯 Add variables to your workflow to extract specific information from images.
                   </p>
                 </div>

@@ -65,9 +65,9 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ settings, onSave, onCance
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">API Configuration</h2>
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">API Configuration</h2>
         <button
           onClick={onCancel}
           className="btn btn-ghost btn-sm"
@@ -76,13 +76,13 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ settings, onSave, onCance
         </button>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
         <div className="flex items-start">
           <div className="flex-1">
-            <h3 className="text-sm font-medium text-blue-800">
+            <h3 className="text-xs sm:text-sm font-medium text-blue-800">
               Google Gemini API Key Required
             </h3>
-            <p className="mt-1 text-sm text-blue-700">
+            <p className="mt-1 text-xs sm:text-sm text-blue-700">
               You need a Google Gemini API key to use image analysis features. 
               Your API key is stored locally and never sent to our servers.
             </p>
@@ -90,7 +90,7 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ settings, onSave, onCance
               href="https://aistudio.google.com/app/apikey"
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
+              className="mt-2 inline-flex items-center text-xs sm:text-sm text-blue-600 hover:text-blue-800"
             >
               Get your API key here
               <ExternalLink className="ml-1 h-3 w-3" />
@@ -99,10 +99,10 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ settings, onSave, onCance
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
         {/* API Key */}
         <div>
-          <label htmlFor="apiKey" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="apiKey" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
             Google Gemini API Key *
           </label>
           <div className="relative">
@@ -112,7 +112,7 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ settings, onSave, onCance
               value={formData.geminiApiKey}
               onChange={(e) => handleInputChange('geminiApiKey', e.target.value)}
               placeholder="AIza..."
-              className={`w-full px-3 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+              className={`w-full px-3 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm ${
                 errors.geminiApiKey ? 'border-red-500' : 'border-gray-300'
               }`}
             />
@@ -129,20 +129,20 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ settings, onSave, onCance
             </button>
           </div>
           {errors.geminiApiKey && (
-            <p className="mt-1 text-sm text-red-600">{errors.geminiApiKey}</p>
+            <p className="mt-1 text-xs sm:text-sm text-red-600">{errors.geminiApiKey}</p>
           )}
         </div>
 
         {/* Model Selection */}
         <div>
-          <label htmlFor="model" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="model" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
             Model
           </label>
           <select
             id="model"
             value={formData.model}
             onChange={(e) => handleInputChange('model', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
           >
             <option value="gemini-1.5-flash">🚀 Gemini 1.5 Flash (Recommended - Fast & Efficient)</option>
             <option value="gemini-1.5-pro">⚡ Gemini 1.5 Pro (High Performance)</option>
@@ -158,7 +158,7 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ settings, onSave, onCance
 
         {/* Max Tokens */}
         <div>
-          <label htmlFor="maxTokens" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="maxTokens" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
             Max Tokens
           </label>
           <input
@@ -168,18 +168,18 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ settings, onSave, onCance
             max="4000"
             value={formData.maxTokens}
             onChange={(e) => handleInputChange('maxTokens', parseInt(e.target.value))}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm ${
               errors.maxTokens ? 'border-red-500' : 'border-gray-300'
             }`}
           />
           {errors.maxTokens && (
-            <p className="mt-1 text-sm text-red-600">{errors.maxTokens}</p>
+            <p className="mt-1 text-xs sm:text-sm text-red-600">{errors.maxTokens}</p>
           )}
         </div>
 
         {/* Temperature */}
         <div>
-          <label htmlFor="temperature" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="temperature" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
             Temperature ({formData.temperature})
           </label>
           <input
@@ -197,23 +197,23 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ settings, onSave, onCance
             <span>More creative</span>
           </div>
           {errors.temperature && (
-            <p className="mt-1 text-sm text-red-600">{errors.temperature}</p>
+            <p className="mt-1 text-xs sm:text-sm text-red-600">{errors.temperature}</p>
           )}
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end space-x-3 pt-4">
+        <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4">
           <button
             type="button"
             onClick={onCancel}
-            className="btn btn-outline btn-md"
+            className="btn btn-outline btn-md w-full sm:w-auto"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saveStatus === 'saving'}
-            className={`btn btn-md ${
+            className={`btn btn-md w-full sm:w-auto ${
               saveStatus === 'saved' 
                 ? 'bg-green-500 hover:bg-green-600 text-white' 
                 : 'btn-primary'

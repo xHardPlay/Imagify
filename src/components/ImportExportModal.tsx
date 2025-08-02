@@ -82,27 +82,27 @@ const ImportExportModal: React.FC<ImportExportModalProps> = ({ appState, setAppS
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-300">
-      <div className="bg-white/95 backdrop-blur-lg rounded-2xl p-8 w-full max-w-lg shadow-2xl border border-white/20 relative">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-300 p-4">
+      <div className="bg-white/95 backdrop-blur-lg rounded-2xl p-4 sm:p-8 w-full max-w-lg shadow-2xl border border-white/20 relative">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 btn btn-ghost btn-sm"
+          className="absolute top-2 sm:top-4 right-2 sm:right-4 btn btn-ghost btn-sm"
         >
           <X className="h-5 w-5" />
         </button>
-        <h2 className="text-2xl font-bold mb-6 text-center">Import / Export</h2>
-        <div className="space-y-6">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center">Import / Export</h2>
+        <div className="space-y-4 sm:space-y-6">
           <div>
-            <h3 className="font-semibold mb-2 flex items-center"><Download className="h-4 w-4 mr-2" /> Export</h3>
-            <div className="flex space-x-2">
-              <button className="btn btn-outline btn-sm" onClick={handleExportConfig}>Export Config</button>
-              <button className="btn btn-outline btn-sm" onClick={handleExportWorkflows}>Export Workflows</button>
+            <h3 className="font-semibold mb-2 flex items-center text-sm sm:text-base"><Download className="h-4 w-4 mr-2" /> Export</h3>
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+              <button className="btn btn-outline btn-sm w-full sm:w-auto" onClick={handleExportConfig}>Export Config</button>
+              <button className="btn btn-outline btn-sm w-full sm:w-auto" onClick={handleExportWorkflows}>Export Workflows</button>
             </div>
           </div>
           <div>
-            <h3 className="font-semibold mb-2 flex items-center"><Upload className="h-4 w-4 mr-2" /> Import</h3>
-            <div className="flex space-x-2">
-              <label className="btn btn-outline btn-sm cursor-pointer">
+            <h3 className="font-semibold mb-2 flex items-center text-sm sm:text-base"><Upload className="h-4 w-4 mr-2" /> Import</h3>
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+              <label className="btn btn-outline btn-sm cursor-pointer w-full sm:w-auto">
                 Import Config
                 <input
                   type="file"
@@ -112,7 +112,7 @@ const ImportExportModal: React.FC<ImportExportModalProps> = ({ appState, setAppS
                   onChange={handleImportConfig}
                 />
               </label>
-              <label className="btn btn-outline btn-sm cursor-pointer">
+              <label className="btn btn-outline btn-sm cursor-pointer w-full sm:w-auto">
                 Import Workflows
                 <input
                   type="file"
@@ -124,7 +124,7 @@ const ImportExportModal: React.FC<ImportExportModalProps> = ({ appState, setAppS
               </label>
             </div>
           </div>
-          {message && <div className="mt-4 text-center text-sm text-blue-700">{message}</div>}
+          {message && <div className="mt-4 text-center text-xs sm:text-sm text-blue-700">{message}</div>}
         </div>
       </div>
     </div>

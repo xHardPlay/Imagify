@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, ImageIcon, Zap, Database, Trash2 } from 'lucide-react';
+import { Settings, ImageIcon, Zap, Database, Trash2, Menu, X } from 'lucide-react';
 import { AppState, Workflow, ImageAnalysis } from './types';
 import ImageUpload from './components/ImageUpload/ImageUpload';
 import VariableManager from './components/VariableManager/VariableManager';
@@ -22,6 +22,7 @@ function App() {
   const [showAPISettings, setShowAPISettings] = useState(false);
   const [activeTab, setActiveTab] = useState<'workflow' | 'image' | 'results'>('workflow');
   const [showImportExport, setShowImportExport] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Initialize app with default configuration on first load
   useEffect(() => {
@@ -73,6 +74,7 @@ function App() {
   const selectWorkflow = (workflow: Workflow) => {
     updateAppState({ currentWorkflow: workflow });
     setActiveTab('workflow');
+    setMobileMenuOpen(false); // Close mobile menu when selecting workflow
   };
 
   const deleteWorkflow = (workflowId: string) => {
@@ -135,42 +137,83 @@ function App() {
       {/* Header */}
       <header className="relative bg-white/80 backdrop-blur-lg shadow-lg border-b border-white/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center space-x-4">
+          <div className="flex justify-between items-center h-16 sm:h-20">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <div className="relative">
-                <ImageIcon className="h-10 w-10 text-purple-600 animate-pulse" />
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full animate-ping"></div>
+                <ImageIcon className="h-8 w-8 sm:h-10 sm:w-10 text-purple-600 animate-pulse" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full animate-ping"></div>
               </div>
-              <div>
-                <h1 className="text-3xl font-bold gradient-text">Neuro-Vision</h1>
-                <span className="text-sm text-purple-600/70 font-medium">✨ AI-Powered Image Analysis by Carlos Ezequiel Centurion.</span>
+              <div className="hidden sm:block">
+                <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Neuro-Vision</h1>
+                <span className="text-xs sm:text-sm text-purple-600/70 font-medium">✨ AI-Powered Image Analysis by Carlos Ezequiel Centurion.</span>
+              </div>
+              <div className="sm:hidden">
+                <h1 className="text-xl font-bold gradient-text">Neuro-Vision</h1>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            
+            {/* Desktop Menu */}
+            <div className="hidden sm:flex items-center space-x-2 lg:space-x-4">
               <button
                 onClick={() => setShowAPISettings(!showAPISettings)}
                 className="btn btn-ghost btn-sm group"
               >
-                <Settings className="h-5 w-5 group-hover:animate-spin transition-transform" />
-                Settings
+                <Settings className="h-4 w-4 sm:h-5 sm:w-5 group-hover:animate-spin transition-transform" />
+                <span className="hidden lg:inline">Settings</span>
               </button>
               <button
                 onClick={() => setShowImportExport(true)}
                 className="btn btn-ghost btn-sm group"
                 title="Import/Export Config & Workflows"
               >
-                <Database className="h-5 w-5" />
-                Import/Export
+                <Database className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="hidden lg:inline">Import/Export</span>
+              </button>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <div className="sm:hidden">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="btn btn-ghost btn-sm"
+              >
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
             </div>
           </div>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="sm:hidden border-t border-gray-200 py-4 space-y-2">
+              <button
+                onClick={() => {
+                  setShowAPISettings(!showAPISettings);
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full btn btn-ghost btn-sm justify-start"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </button>
+              <button
+                onClick={() => {
+                  setShowImportExport(true);
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full btn btn-ghost btn-sm justify-start"
+              >
+                <Database className="h-4 w-4 mr-2" />
+                Import/Export
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
       {/* API Settings Modal */}
       {showAPISettings && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-300">
-          <div className="bg-white/95 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md shadow-2xl border border-white/20 transform animate-in zoom-in duration-300">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-300 p-4">
+          <div className="bg-white/95 backdrop-blur-lg rounded-2xl p-4 sm:p-8 w-full max-w-md shadow-2xl border border-white/20 transform animate-in zoom-in duration-300">
             <APIKeyManager
               settings={appState.apiSettings}
               onSave={(settings) => {
@@ -191,41 +234,177 @@ function App() {
         />
       )}
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                 {/* Debug Info - Always Visible */}
-         <div className="mb-4 p-3 bg-gray-100 rounded-lg text-sm">
-           <strong>Debug Info:</strong> {appState.workflows.length} workflows saved | 
-           API: {appState.apiSettings ? '✓ Configured' : '❌ Not configured'} |
-           <button 
-             onClick={() => {
-               if (window.confirm('Are you sure you want to reset all data? This cannot be undone.')) {
-                 localStorage.removeItem('imagify-app-state');
-                 window.location.reload();
-               }
-             }}
-             className="ml-2 text-red-600 hover:text-red-800"
-           >
-             Reset All Data
-           </button>
-           <button 
-             onClick={() => {
-               if (window.confirm('Load default workflows?')) {
-                 const defaultConfig = loadDefaultConfig();
-                 console.log('Loading default config:', defaultConfig);
-                 updateAppState({
-                   workflows: defaultConfig.workflows,
-                   currentWorkflow: defaultConfig.workflows.length > 0 ? defaultConfig.workflows[0] : null,
-                   apiSettings: defaultConfig.apiSettings
-                 });
-               }
-             }}
-             className="ml-2 text-blue-600 hover:text-blue-800"
-           >
-             Load Default Workflows
-           </button>
-         </div>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
+        {/* Debug Info - Always Visible */}
+        <div className="mb-4 p-3 bg-gray-100 rounded-lg text-xs sm:text-sm">
+          <strong>Debug Info:</strong> {appState.workflows.length} workflows saved | 
+          API: {appState.apiSettings ? '✓ Configured' : '❌ Not configured'} |
+          <button 
+            onClick={() => {
+              if (window.confirm('Are you sure you want to reset all data? This cannot be undone.')) {
+                localStorage.removeItem('imagify-app-state');
+                window.location.reload();
+              }
+            }}
+            className="ml-2 text-red-600 hover:text-red-800"
+          >
+            Reset All Data
+          </button>
+          <button 
+            onClick={() => {
+              if (window.confirm('Load default workflows?')) {
+                const defaultConfig = loadDefaultConfig();
+                console.log('Loading default config:', defaultConfig);
+                updateAppState({
+                  workflows: defaultConfig.workflows,
+                  currentWorkflow: defaultConfig.workflows.length > 0 ? defaultConfig.workflows[0] : null,
+                  apiSettings: defaultConfig.apiSettings
+                });
+              }
+            }}
+            className="ml-2 text-blue-600 hover:text-blue-800"
+          >
+            Load Default Workflows
+          </button>
+        </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* Mobile Layout */}
+        <div className="block lg:hidden">
+          {/* Mobile Workflows Section */}
+          <div className="card mb-6 animate-in slide-in-from-top duration-500">
+            <div className="card-header">
+              <h2 className="card-title text-xl sm:text-2xl">🔥 Workflows</h2>
+              <p className="card-description text-sm">
+                Create and manage your AI analysis workflows
+                {appState.workflows.length > 0 && (
+                  <span className="block text-xs text-green-600 mt-1">
+                    ✓ {appState.workflows.length} workflow{appState.workflows.length > 1 ? 's' : ''} saved locally
+                  </span>
+                )}
+              </p>
+            </div>
+            <div className="card-content">
+              <button
+                onClick={createNewWorkflow}
+                className="btn btn-primary btn-md w-full mb-4 group"
+              >
+                <Zap className="h-4 w-4 sm:h-5 sm:w-5 mr-2 group-hover:animate-bounce" />
+                ✨ New Workflow
+              </button>
+              
+              <div className="space-y-2">
+                {appState.workflows.map((workflow, index) => (
+                  <div
+                    key={workflow.id}
+                    className={`relative p-3 sm:p-4 rounded-xl text-sm transition-all duration-300 group ${
+                      appState.currentWorkflow?.id === workflow.id
+                        ? 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 shadow-lg scale-105'
+                        : 'hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 hover:shadow-md hover:scale-102'
+                    }`}
+                    style={{animationDelay: `${index * 100}ms`}}
+                  >
+                    <button
+                      onClick={() => selectWorkflow(workflow)}
+                      className="w-full text-left"
+                    >
+                      <div className="font-semibold flex items-center pr-8 text-sm sm:text-base">
+                        🤖 {workflow.name}
+                      </div>
+                      <div className="text-xs text-purple-600/70 mt-1">
+                        📊 {workflow.variables.length} variables
+                      </div>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteWorkflow(workflow.id);
+                      }}
+                      className="absolute top-2 right-2 p-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700 hover:bg-red-50"
+                      title="Delete workflow"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Tabs */}
+          <div className="mb-6">
+            <nav className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 bg-white/50 backdrop-blur-lg p-2 rounded-2xl shadow-lg border border-white/20">
+              <button
+                onClick={() => setActiveTab('workflow')}
+                className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
+                  activeTab === 'workflow'
+                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg transform scale-105'
+                    : 'text-purple-600 hover:bg-purple-50 hover:scale-102'
+                }`}
+              >
+                <Database className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span>🛠️ Workflow Setup</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('image')}
+                className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
+                  activeTab === 'image'
+                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg transform scale-105'
+                    : 'text-purple-600 hover:bg-purple-50 hover:scale-102'
+                } ${!appState.currentWorkflow ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={!appState.currentWorkflow}
+              >
+                <ImageIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span>📸 Image Analysis</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('results')}
+                className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
+                  activeTab === 'results'
+                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg transform scale-105'
+                    : 'text-purple-600 hover:bg-purple-50 hover:scale-102'
+                } ${!appState.currentImage ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={!appState.currentImage}
+              >
+                <Zap className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span>✨ Results</span>
+              </button>
+            </nav>
+          </div>
+
+          {/* Mobile Tab Content */}
+          <div className="space-y-6">
+            {activeTab === 'workflow' && (
+              <VariableManager
+                workflow={appState.currentWorkflow}
+                onUpdateWorkflow={updateCurrentWorkflow}
+              />
+            )}
+
+            {activeTab === 'image' && appState.currentWorkflow && (
+              <ImageUpload
+                workflow={appState.currentWorkflow}
+                apiSettings={appState.apiSettings}
+                onImageAnalyzed={setCurrentImage}
+                isProcessing={appState.isProcessing}
+                onProcessingChange={(isProcessing) => updateAppState({ isProcessing })}
+              />
+            )}
+
+            {activeTab === 'results' && appState.currentImage && (
+              <ResultsDisplay
+                imageAnalysis={appState.currentImage}
+                apiSettings={appState.apiSettings}
+                onExport={(format) => {
+                  // TODO: Implement export functionality
+                  console.log('Export requested:', format);
+                }}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Desktop Layout */}
+        <div className="hidden lg:grid lg:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="card animate-in slide-in-from-left duration-500">

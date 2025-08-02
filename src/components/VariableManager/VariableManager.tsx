@@ -101,15 +101,15 @@ const VariableManager: React.FC<VariableManagerProps> = ({ workflow, onUpdateWor
     return (
       <div className="card">
         <div className="card-content">
-          <div className="text-center py-12">
-            <div className="relative mb-8">
-              <Type className="h-20 w-20 text-purple-300 mx-auto animate-pulse" />
-              <div className="absolute inset-0 h-20 w-20 mx-auto bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-xl animate-pulse"></div>
+          <div className="text-center py-8 sm:py-12">
+            <div className="relative mb-6 sm:mb-8">
+              <Type className="h-16 w-16 sm:h-20 sm:w-20 text-purple-300 mx-auto animate-pulse" />
+              <div className="absolute inset-0 h-16 w-16 sm:h-20 sm:w-20 mx-auto bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-xl animate-pulse"></div>
             </div>
-            <h3 className="text-2xl font-bold gradient-text mb-4">
+            <h3 className="text-xl sm:text-2xl font-bold gradient-text mb-3 sm:mb-4">
               🚀 No Workflow Selected
             </h3>
-            <p className="text-purple-600/70 text-lg leading-relaxed">
+            <p className="text-purple-600/70 text-sm sm:text-lg leading-relaxed">
               ✨ Create a new workflow or select an existing one to manage variables.
             </p>
           </div>
@@ -119,19 +119,19 @@ const VariableManager: React.FC<VariableManagerProps> = ({ workflow, onUpdateWor
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Workflow Info */}
       <div className="card">
         <div className="card-header">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
             <div>
-              <h2 className="card-title">🛠️ Workflow Configuration</h2>
-              <p className="card-description">
+              <h2 className="card-title text-xl sm:text-2xl lg:text-3xl">🛠️ Workflow Configuration</h2>
+              <p className="card-description text-sm sm:text-base">
                 ✨ Configure your workflow name, description, and variables
               </p>
             </div>
             {saveStatus !== 'idle' && (
-              <div className="flex items-center space-x-2 text-sm">
+              <div className="flex items-center space-x-2 text-xs sm:text-sm">
                 {saveStatus === 'saving' && (
                   <>
                     <div className="h-3 w-3 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
@@ -183,16 +183,16 @@ const VariableManager: React.FC<VariableManagerProps> = ({ workflow, onUpdateWor
       {/* Variables List */}
       <div className="card">
         <div className="card-header">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
             <div>
-              <h2 className="card-title">📊 Variables</h2>
-              <p className="card-description">
+              <h2 className="card-title text-xl sm:text-2xl lg:text-3xl">📊 Variables</h2>
+              <p className="card-description text-sm sm:text-base">
                 🎯 Define what information to extract from images
               </p>
             </div>
             <button
               onClick={handleCreateVariable}
-              className="btn btn-primary btn-sm group"
+              className="btn btn-primary btn-sm group w-full sm:w-auto"
               disabled={isCreating || editingVariable !== null}
             >
               <Plus className="h-4 w-4 mr-2 group-hover:animate-bounce" />
@@ -202,22 +202,22 @@ const VariableManager: React.FC<VariableManagerProps> = ({ workflow, onUpdateWor
         </div>
         <div className="card-content">
           {workflow.variables.length === 0 && !isCreating ? (
-            <div className="text-center py-12">
-              <div className="relative mb-6">
-                <Type className="h-16 w-16 text-purple-300 mx-auto animate-pulse" />
-                <div className="absolute inset-0 h-16 w-16 mx-auto bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-xl animate-pulse"></div>
+            <div className="text-center py-8 sm:py-12">
+              <div className="relative mb-4 sm:mb-6">
+                <Type className="h-12 w-12 sm:h-16 sm:w-16 text-purple-300 mx-auto animate-pulse" />
+                <div className="absolute inset-0 h-12 w-12 sm:h-16 sm:w-16 mx-auto bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-xl animate-pulse"></div>
               </div>
-              <h3 className="text-xl font-bold gradient-text mb-3">
+              <h3 className="text-lg sm:text-xl font-bold gradient-text mb-2 sm:mb-3">
                 🎯 No Variables Defined
               </h3>
-              <p className="text-purple-600/70 mb-6 leading-relaxed">
+              <p className="text-purple-600/70 mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base">
                 ✨ Add variables to define what information to extract from images.
               </p>
               <button
                 onClick={handleCreateVariable}
-                className="btn btn-primary btn-md group"
+                className="btn btn-primary btn-md group w-full sm:w-auto"
               >
-                <Plus className="h-5 w-5 mr-2 group-hover:animate-bounce" />
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2 group-hover:animate-bounce" />
                 🚀 Add Your First Variable
               </button>
             </div>
@@ -228,30 +228,32 @@ const VariableManager: React.FC<VariableManagerProps> = ({ workflow, onUpdateWor
                 return (
                   <div
                     key={variable.id}
-                    className={`flex items-center justify-between p-4 border rounded-lg ${
+                    className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border rounded-lg ${
                       editingVariable?.id === variable.id ? 'border-primary-300 bg-primary-50' : 'border-gray-200'
                     }`}
                   >
-                    <div className="flex items-center flex-1">
-                      <Icon className="h-5 w-5 text-gray-500 mr-3" />
-                      <div className="flex-1">
-                        <div className="flex items-center">
-                          <h4 className="font-medium text-gray-900">{variable.name}</h4>
-                          <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                            {variableTypeLabels[variable.type]}
-                          </span>
-                          {variable.required && (
-                            <span className="ml-1 text-xs bg-red-100 text-red-600 px-2 py-1 rounded">
-                              Required
+                    <div className="flex items-start sm:items-center flex-1 mb-2 sm:mb-0">
+                      <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 mr-2 sm:mr-3 flex-shrink-0 mt-0.5 sm:mt-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0">
+                          <h4 className="font-medium text-gray-900 text-sm sm:text-base truncate">{variable.name}</h4>
+                          <div className="flex flex-wrap gap-1 sm:gap-2">
+                            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                              {variableTypeLabels[variable.type]}
                             </span>
-                          )}
+                            {variable.required && (
+                              <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded">
+                                Required
+                              </span>
+                            )}
+                          </div>
                         </div>
                         {variable.description && (
-                          <p className="text-sm text-gray-500 mt-1">{variable.description}</p>
+                          <p className="text-xs sm:text-sm text-gray-500 mt-1">{variable.description}</p>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 self-end sm:self-auto">
                       <button
                         onClick={() => handleEditVariable(variable)}
                         className="btn btn-ghost btn-sm"
@@ -275,14 +277,14 @@ const VariableManager: React.FC<VariableManagerProps> = ({ workflow, onUpdateWor
 
           {/* Variable Form */}
           {(isCreating || editingVariable) && (
-            <div className="mt-6 p-4 border border-primary-300 rounded-lg bg-primary-50">
-              <h3 className="font-medium text-gray-900 mb-4">
+            <div className="mt-4 sm:mt-6 p-4 border border-primary-300 rounded-lg bg-primary-50">
+              <h3 className="font-medium text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">
                 {editingVariable ? 'Edit Variable' : 'Create New Variable'}
               </h3>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                       Variable Name *
                     </label>
                     <input
@@ -290,17 +292,17 @@ const VariableManager: React.FC<VariableManagerProps> = ({ workflow, onUpdateWor
                       value={variableForm.name}
                       onChange={(e) => updateVariableForm('name', e.target.value)}
                       placeholder="e.g., color palette, number of people"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                       Type
                     </label>
                     <select
                       value={variableForm.type}
                       onChange={(e) => updateVariableForm('type', e.target.value as Variable['type'])}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
                     >
                       {Object.entries(variableTypeLabels).map(([value, label]) => (
                         <option key={value} value={value}>{label}</option>
@@ -309,7 +311,7 @@ const VariableManager: React.FC<VariableManagerProps> = ({ workflow, onUpdateWor
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Description
                   </label>
                   <textarea
@@ -317,7 +319,7 @@ const VariableManager: React.FC<VariableManagerProps> = ({ workflow, onUpdateWor
                     onChange={(e) => updateVariableForm('description', e.target.value)}
                     placeholder="Describe what this variable should extract..."
                     rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
                   />
                 </div>
                 <div className="flex items-center">
@@ -328,14 +330,14 @@ const VariableManager: React.FC<VariableManagerProps> = ({ workflow, onUpdateWor
                     onChange={(e) => updateVariableForm('required', e.target.checked)}
                     className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="required" className="ml-2 text-sm text-gray-700">
+                  <label htmlFor="required" className="ml-2 text-xs sm:text-sm text-gray-700">
                     Required variable
                   </label>
                 </div>
-                <div className="flex justify-end space-x-2">
+                <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
                   <button
                     onClick={handleCancelEdit}
-                    className="btn btn-outline btn-sm"
+                    className="btn btn-outline btn-sm w-full sm:w-auto"
                   >
                     <X className="h-4 w-4 mr-2" />
                     Cancel
@@ -343,7 +345,7 @@ const VariableManager: React.FC<VariableManagerProps> = ({ workflow, onUpdateWor
                   <button
                     onClick={handleSaveVariable}
                     disabled={!variableForm.name.trim()}
-                    className="btn btn-primary btn-sm"
+                    className="btn btn-primary btn-sm w-full sm:w-auto"
                   >
                     <Save className="h-4 w-4 mr-2" />
                     {editingVariable ? 'Save Changes' : 'Create Variable'}

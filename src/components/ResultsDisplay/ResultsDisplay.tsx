@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, Copy, ImageIcon, MessageCircle, Send, X, Star, Sparkles } from 'lucide-react';
+import { Copy, ImageIcon, MessageCircle, Send, X, Star, Sparkles } from 'lucide-react';
 import { ImageAnalysis, APISettings } from '../../types';
 
 interface ResultsDisplayProps {
@@ -16,7 +16,7 @@ interface ChatMessage {
   timestamp: Date;
 }
 
-const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, onExport, apiSettings }) => {
+const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, apiSettings }) => {
   
   // Chat state
   const [showChat, setShowChat] = useState(false);
@@ -40,41 +40,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, onExport
     // TODO: Add toast notification
   };
 
-  const downloadImage = async (format: string) => {
-    try {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      
-      img.crossOrigin = 'anonymous';
-      img.src = imageAnalysis.imageUrl;
-      
-      img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx?.drawImage(img, 0, 0);
-        
-        const quality = format === 'jpeg' ? 0.9 : undefined;
-        const mimeType = `image/${format}`;
-        
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${imageAnalysis.imageName.split('.')[0]}.${format}`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-          }
-        }, mimeType, quality);
-      };
-    } catch (error) {
-      console.error('Error downloading image:', error);
-      alert('Failed to download image');
-    }
-  };
+
 
   const sendChatMessage = async () => {
     if (!currentMessage.trim() || !apiSettings?.geminiApiKey || isChatLoading) return;
@@ -253,50 +219,22 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, onExport
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="card">
         <div className="card-header">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
             <div>
-              <h2 className="card-title">Analysis Results</h2>
-              <p className="card-description">
-                Results for "{imageAnalysis.imageName}"
+              <h2 className="card-title text-xl sm:text-2xl lg:text-3xl">✨ Analysis Results</h2>
+              <p className="card-description text-sm sm:text-base">
+                🎯 View and interact with your image analysis results
               </p>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="relative group">
-                <button className="btn btn-outline btn-sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Download Image
-                </button>
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
-                  <div className="p-2">
-                    <button onClick={() => downloadImage('jpeg')} className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded">JPEG (.jpg)</button>
-                    <button onClick={() => downloadImage('png')} className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded">PNG (.png)</button>
-                    <button onClick={() => downloadImage('webp')} className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded">WebP (.webp)</button>
-                    <button onClick={() => downloadImage('avif')} className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded">AVIF (.avif)</button>
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={() => onExport('json')}
-                className="btn btn-outline btn-sm"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Export JSON
-              </button>
-              <button
-                onClick={() => onExport('csv')}
-                className="btn btn-outline btn-sm"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Export CSV
-              </button>
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
               <button
                 onClick={() => setShowChat(true)}
-                className="btn btn-primary btn-sm"
+                className="btn btn-secondary btn-sm group w-full sm:w-auto"
               >
-                <MessageCircle className="h-4 w-4 mr-2" />
+                <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                 Ask AI
               </button>
             </div>
@@ -304,10 +242,10 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, onExport
         </div>
         <div className="card-content">
           {/* Nuevo contenedor flex para imagen y resultados */}
-          <div className="flex flex-col md:flex-row gap-8">
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
             {/* Imagen a la izquierda */}
-            <div className="mb-6 md:mb-0 md:w-1/2 max-w-md">
-              <h3 className="text-lg font-medium text-gray-900 mb-3">Original Image</h3>
+            <div className="mb-6 lg:mb-0 lg:w-1/2 max-w-md">
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3">Original Image</h3>
               <div className="border rounded-lg overflow-hidden">
                 <img
                   src={imageAnalysis.imageUrl}
@@ -319,47 +257,49 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, onExport
 
             {/* Resultados a la derecha */}
             <div className="flex-1">
-              <h3 className="text-lg font-medium text-gray-900 mb-3">Extracted Variables</h3>
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3">Extracted Variables</h3>
               {imageAnalysis.results.length === 0 ? (
                 <div className="text-center py-8">
                   <div className="text-gray-400 mb-4">
                     <ImageIcon className="h-8 w-8 mx-auto" />
                   </div>
-                  <p className="text-gray-500">No results available</p>
+                  <p className="text-gray-500 text-sm sm:text-base">No results available</p>
                   <div className="mt-4 text-xs text-gray-400">
                     Debug: Results array length = {imageAnalysis.results.length}
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {imageAnalysis.results.map((result, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center mb-2">
-                            <h4 className="font-medium text-gray-900">{result.variableName}</h4>
-                            <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">
-                              {result.source}
-                            </span>
-                            {result.confidence && (
-                              <span className="ml-1 text-xs bg-green-100 text-green-600 px-2 py-1 rounded">
-                                {Math.round(result.confidence * 100)}% confidence
+                    <div key={index} className="border border-gray-200 rounded-lg p-3 sm:p-4">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-2 sm:space-y-0">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-center mb-2 space-y-1 sm:space-y-0">
+                            <h4 className="font-medium text-gray-900 text-sm sm:text-base truncate">{result.variableName}</h4>
+                            <div className="flex flex-wrap gap-1 sm:gap-2">
+                              <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">
+                                {result.source}
                               </span>
-                            )}
-                            {result.improved && (
-                              <span className="ml-1 text-xs bg-yellow-100 text-yellow-600 px-2 py-1 rounded flex items-center">
-                                <Star className="h-3 w-3 mr-1" />
-                                Improved
-                              </span>
-                            )}
+                              {result.confidence && (
+                                <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded">
+                                  {Math.round(result.confidence * 100)}% confidence
+                                </span>
+                              )}
+                              {result.improved && (
+                                <span className="text-xs bg-yellow-100 text-yellow-600 px-2 py-1 rounded flex items-center">
+                                  <Star className="h-3 w-3 mr-1" />
+                                  Improved
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <div className="bg-gray-50 rounded p-3">
-                            <pre className="text-sm text-gray-800 whitespace-pre-wrap">
+                          <div className="bg-gray-50 rounded p-2 sm:p-3">
+                            <pre className="text-xs sm:text-sm text-gray-800 whitespace-pre-wrap break-words">
                               {formatResultValue(result.value)}
                             </pre>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-1">
+                        <div className="flex items-center space-x-1 self-end sm:self-auto">
                           <button
                             onClick={() => copyToClipboard(formatResultValue(result.value))}
                             className="btn btn-ghost btn-sm"
@@ -387,13 +327,13 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, onExport
           </div>
 
           {/* Analysis Status */}
-          <div className="mt-6 pt-4 border-t border-gray-200">
-            <div className="flex justify-between items-center text-sm text-gray-500">
+          <div className="mt-4 sm:mt-6 pt-4 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-xs sm:text-sm text-gray-500 space-y-1 sm:space-y-0">
               <span>Status: {imageAnalysis.status}</span>
               <span>Analyzed: {new Date(imageAnalysis.uploadedAt).toLocaleString()}</span>
             </div>
             {imageAnalysis.error && (
-              <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+              <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded text-xs sm:text-sm text-red-700">
                 Error: {imageAnalysis.error}
               </div>
             )}
@@ -403,13 +343,13 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, onExport
       
       {/* Chat Modal */}
       {showChat && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl w-full max-w-2xl h-[600px] flex flex-col shadow-2xl">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-2xl h-[80vh] sm:h-[600px] flex flex-col shadow-2xl">
             {/* Chat Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
               <div>
-                <h3 className="text-xl font-bold gradient-text">🤖 Ask AI about this image</h3>
-                <p className="text-sm text-gray-600">Get insights and ask questions about your image</p>
+                <h3 className="text-lg sm:text-xl font-bold gradient-text">🤖 Ask AI about this image</h3>
+                <p className="text-xs sm:text-sm text-gray-600">Get insights and ask questions about your image</p>
               </div>
               <button
                 onClick={() => setShowChat(false)}
@@ -420,22 +360,22 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, onExport
             </div>
             
             {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 sm:space-y-4">
               {chatMessages.length === 0 ? (
-                <div className="text-center py-12">
-                  <MessageCircle className="h-16 w-16 text-purple-300 mx-auto mb-4" />
-                  <p className="text-gray-500">Start a conversation about this image!</p>
-                  <p className="text-sm text-gray-400 mt-2">Ask anything: "What colors do you see?", "Describe this image", "What's the mood?"</p>
+                <div className="text-center py-8 sm:py-12">
+                  <MessageCircle className="h-12 w-12 sm:h-16 sm:w-16 text-purple-300 mx-auto mb-3 sm:mb-4" />
+                  <p className="text-gray-500 text-sm sm:text-base">Start a conversation about this image!</p>
+                  <p className="text-xs sm:text-sm text-gray-400 mt-2">Ask anything: "What colors do you see?", "Describe this image", "What's the mood?"</p>
                 </div>
               ) : (
                 chatMessages.map((message) => (
                   <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[80%] p-3 rounded-2xl ${
+                    <div className={`max-w-[85%] sm:max-w-[80%] p-3 rounded-2xl ${
                       message.type === 'user' 
                         ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' 
                         : 'bg-gray-100 text-gray-800'
                     }`}>
-                      <p className="text-sm">{message.content}</p>
+                      <p className="text-xs sm:text-sm">{message.content}</p>
                       <p className={`text-xs mt-1 ${
                         message.type === 'user' ? 'text-purple-100' : 'text-gray-500'
                       }`}>
@@ -459,7 +399,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, onExport
             </div>
             
             {/* Chat Input */}
-            <div className="p-6 border-t border-gray-200">
+            <div className="p-4 sm:p-6 border-t border-gray-200">
               <div className="flex space-x-3">
                 <input
                   type="text"
@@ -467,7 +407,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, onExport
                   onChange={(e) => setCurrentMessage(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
                   placeholder="Ask something about this image..."
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
                   disabled={isChatLoading}
                 />
                 <button
@@ -475,7 +415,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, onExport
                   disabled={!currentMessage.trim() || isChatLoading}
                   className="btn btn-primary btn-md"
                 >
-                  <Send className="h-5 w-5" />
+                  <Send className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
               </div>
             </div>
@@ -485,13 +425,13 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, onExport
       
       {/* Improve Results Modal */}
       {showImproveModal && selectedResult && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
               <div>
-                <h3 className="text-xl font-bold gradient-text">✨ Improve Result with AI</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="text-lg sm:text-xl font-bold gradient-text">✨ Improve Result with AI</h3>
+                <p className="text-xs sm:text-sm text-gray-600">
                   Modify: <span className="font-medium">{selectedResult.variableName}</span>
                 </p>
               </div>
@@ -508,40 +448,40 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, onExport
             </div>
             
             {/* Modal Content */}
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                   Current Result:
                 </label>
                 <div className="bg-gray-50 rounded-lg p-3 border">
-                  <p className="text-sm text-gray-800">
+                  <p className="text-xs sm:text-sm text-gray-800">
                     {formatResultValue(selectedResult.value)}
                   </p>
                 </div>
               </div>
               
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                   Your Improvement Request:
                 </label>
                 <textarea
                   value={improveRequest}
                   onChange={(e) => setImproveRequest(e.target.value)}
                   placeholder="Example: 'Change the people to animals', 'Make it more dramatic', 'Add more details about the environment'"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none text-sm"
                   rows={4}
                   disabled={isImproving}
                 />
               </div>
               
-              <div className="flex justify-end space-x-3">
+              <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
                 <button
                   onClick={() => {
                     setShowImproveModal(false);
                     setImproveRequest('');
                     setSelectedResult(null);
                   }}
-                  className="btn btn-outline"
+                  className="btn btn-outline w-full sm:w-auto"
                   disabled={isImproving}
                 >
                   Cancel
@@ -549,7 +489,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ imageAnalysis, onExport
                 <button
                   onClick={improveResult}
                   disabled={!improveRequest.trim() || isImproving}
-                  className="btn btn-primary"
+                  className="btn btn-primary w-full sm:w-auto"
                 >
                   {isImproving ? (
                     <>
