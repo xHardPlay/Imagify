@@ -21,6 +21,8 @@ interface GeminiProxyRequest {
     topP?: number;
     topK?: number;
   };
+  // Optional model override (for per-node model selection in workflows)
+  model?: string;
 }
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
@@ -66,7 +68,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     // Get request body
     const body: GeminiProxyRequest = await request.json();
-    const { contents, generationConfig } = body;
+    const { contents, generationConfig, model: requestModel } = body;
 
     if (!contents || !Array.isArray(contents) || contents.length === 0) {
       return new Response(JSON.stringify({
@@ -86,8 +88,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       ...(generationConfig?.topK !== undefined && { topK: generationConfig.topK }),
     };
 
-    // Forward to Gemini API
-    const model = settings.model || 'gemini-1.5-flash';
+    // Forward to Gemini API (use request model override if provided, else user settings, else default)
+    const model = requestModel || settings.model || 'gemini-1.5-flash';
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
     const geminiResponse = await fetch(geminiUrl, {

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Upload, ImageIcon, Loader, Settings } from 'lucide-react';
 import { Workflow, APISettings, ImageAnalysis, Variable, VariableResult } from '../../types';
 import { api } from '../../services/api';
+import { imageStorage } from '../../services/imageStorage';
 
 interface ImageUploadProps {
   workflow: Workflow;
@@ -71,6 +72,42 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       // Update image analysis with results
       imageAnalysis.results = results;
       imageAnalysis.status = 'completed';
+
+      // Save image to IndexedDB and analysis to database
+      try {
+        const localImageId = imageStorage.generateImageId();
+        const fullBase64 = `data:image/jpeg;base64,${compressedBase64}`;
+
+        // Save full image locally
+        await imageStorage.saveImage(localImageId, fullBase64, 'image/jpeg');
+
+        // Create thumbnail for preview
+        const thumbnail = await imageStorage.createThumbnail(fullBase64, 80);
+
+        // Convert results to object format for storage
+        const resultData: Record<string, any> = {};
+        results.forEach(r => {
+          resultData[r.variableName] = {
+            value: r.value,
+            confidence: r.confidence,
+          };
+        });
+
+        // Save analysis to database
+        await api.createAnalysis({
+          workflowId: workflow.id,
+          workflowName: workflow.name,
+          title: file.name || `Analysis ${new Date().toLocaleTimeString()}`,
+          resultData,
+          thumbnailBase64: thumbnail,
+          localImageId,
+        });
+
+        console.log('Analysis saved to history');
+      } catch (saveError) {
+        console.error('Failed to save analysis to history:', saveError);
+        // Don't block the main flow if saving fails
+      }
 
       // Force a small delay to ensure state is properly set
       setTimeout(() => {

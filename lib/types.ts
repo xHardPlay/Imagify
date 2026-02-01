@@ -48,6 +48,18 @@ export interface Variable {
   sort_order: number;
 }
 
+export interface Analysis {
+  id: string;
+  user_id: string;
+  workflow_id: string | null;
+  workflow_name: string;
+  title: string;
+  result_data: string; // JSON string
+  thumbnail_base64: string | null;
+  local_image_id: string | null;
+  created_at: string;
+}
+
 export interface AuthenticatedRequest extends Request {
   user?: {
     id: string;

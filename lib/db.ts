@@ -1,6 +1,6 @@
 // Database helper utilities
 
-import type { Env, User, Workflow, Variable, ApiSettings, Session } from './types';
+import type { Env, User, Workflow, Variable, ApiSettings, Session, Analysis } from './types';
 
 // User queries
 export async function getUserByEmail(db: D1Database, email: string): Promise<User | null> {
@@ -288,4 +288,68 @@ export async function upsertApiSettings(
       settings.temperature || 0.4
     ).run();
   }
+}
+
+// Analysis queries
+export async function getAnalysesByUser(
+  db: D1Database,
+  userId: string,
+  limit: number = 50,
+  offset: number = 0
+): Promise<Analysis[]> {
+  const result = await db.prepare(
+    'SELECT * FROM analyses WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'
+  ).bind(userId, limit, offset).all();
+  return (result.results || []) as Analysis[];
+}
+
+export async function getAnalysisById(
+  db: D1Database,
+  id: string,
+  userId: string
+): Promise<Analysis | null> {
+  const result = await db.prepare(
+    'SELECT * FROM analyses WHERE id = ? AND user_id = ?'
+  ).bind(id, userId).first();
+  return result as Analysis | null;
+}
+
+export async function createAnalysis(
+  db: D1Database,
+  id: string,
+  userId: string,
+  workflowId: string | null,
+  workflowName: string,
+  title: string,
+  resultData: string,
+  thumbnailBase64?: string | null,
+  localImageId?: string | null
+): Promise<void> {
+  await db.prepare(
+    'INSERT INTO analyses (id, user_id, workflow_id, workflow_name, title, result_data, thumbnail_base64, local_image_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+  ).bind(
+    id,
+    userId,
+    workflowId,
+    workflowName,
+    title,
+    resultData,
+    thumbnailBase64 || null,
+    localImageId || null
+  ).run();
+}
+
+export async function deleteAnalysis(
+  db: D1Database,
+  id: string,
+  userId: string
+): Promise<void> {
+  await db.prepare('DELETE FROM analyses WHERE id = ? AND user_id = ?').bind(id, userId).run();
+}
+
+export async function getAnalysesCount(db: D1Database, userId: string): Promise<number> {
+  const result = await db.prepare(
+    'SELECT COUNT(*) as count FROM analyses WHERE user_id = ?'
+  ).bind(userId).first();
+  return (result?.count as number) || 0;
 }

@@ -47,6 +47,17 @@ export interface GeminiModel {
   isRecommended?: boolean;
 }
 
+export interface Analysis {
+  id: string;
+  workflowId: string | null;
+  workflowName: string;
+  title: string;
+  resultData: Record<string, any>;
+  thumbnailBase64: string | null;
+  localImageId: string | null;
+  createdAt: string;
+}
+
 // Auth routes should not trigger the unauthorized event on 401
 // because they're expected to fail with 401 for invalid credentials
 const AUTH_ROUTES = ['/auth/login', '/auth/register'];
@@ -194,12 +205,40 @@ class ApiClient {
     generationConfig?: {
       temperature?: number;
       maxOutputTokens?: number;
-    }
+    },
+    model?: string
   ): Promise<ApiResponse<any>> {
     return this.request('/gemini/proxy', {
       method: 'POST',
-      body: JSON.stringify({ contents, generationConfig }),
+      body: JSON.stringify({ contents, generationConfig, model }),
     });
+  }
+
+  // Analysis history methods
+  async getAnalyses(limit: number = 50, offset: number = 0): Promise<ApiResponse<Analysis[]>> {
+    return this.request(`/analyses?limit=${limit}&offset=${offset}`);
+  }
+
+  async getAnalysis(id: string): Promise<ApiResponse<Analysis>> {
+    return this.request(`/analyses/${id}`);
+  }
+
+  async createAnalysis(analysis: {
+    workflowId?: string | null;
+    workflowName: string;
+    title: string;
+    resultData: Record<string, any>;
+    thumbnailBase64?: string | null;
+    localImageId?: string | null;
+  }): Promise<ApiResponse<Analysis>> {
+    return this.request('/analyses', {
+      method: 'POST',
+      body: JSON.stringify(analysis),
+    });
+  }
+
+  async deleteAnalysis(id: string): Promise<ApiResponse<{ message: string; localImageId?: string }>> {
+    return this.request(`/analyses/${id}`, { method: 'DELETE' });
   }
 }
 
