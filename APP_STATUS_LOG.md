@@ -10,7 +10,7 @@
 ### ✅ Estado General
 - **Aplicación**: Funcionando correctamente
 - **Despliegue**: Activo en Cloudflare Pages
-- **URL de producción**: https://eafedebe.neurovision-33m.pages.dev
+- **URL de producción**: https://flux-studio-ai.pages.dev/
 - **Último build**: Exitoso
 - **Dependencias**: Actualizadas y estables
 
@@ -279,3 +279,29 @@ La aplicación ahora es **completamente funcional en todos los dispositivos**:
 ---
 
 *Log generado automáticamente el $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")* 
+
+---
+
+## 📝 LOG DE CAMBIOS - API KEY UPDATE
+
+### 🔄 Actualización de API Key - 31/08/2025 17:54
+
+**Cambio Realizado**: Actualización de la API key de Google Gemini
+
+**Archivos Modificados**:
+- ✅ `src/services/defaultConfig.ts` - API key actualizada en configuración por defecto
+- ✅ `cfg/MyConfig.json` - API key actualizada en configuración de usuario
+
+**Nueva API Key**: `AIzaSyA9DKUN8P80VQHd0KtVIFilfu2TcL81yMs`
+
+**Backups Creados**:
+- ✅ `archive/defaultConfig.ts.backup.md` - Backup de configuración por defecto
+- ✅ `archive/MyConfig.json.backup.md` - Backup de configuración de usuario
+
+**Estado**: ✅ Completado exitosamente
+
+**Notas**:
+- Se siguieron las reglas de seguridad (Rule #3) - no se eliminaron archivos, se crearon backups
+- La nueva API key está lista para ser utilizada en la aplicación
+- Los usuarios existentes mantendrán su configuración actual en localStorage
+- Los nuevos usuarios cargarán automáticamente la nueva API key por defecto 

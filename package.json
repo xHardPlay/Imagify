@@ -1,5 +1,5 @@
 {
-  "name": "imagify",
+  "name": "flux-studio",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -14,7 +14,15 @@
     "deploy:cloudflare:staging": "npm run build && wrangler pages deploy dist --env staging",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
-    "analyze": "npm run build && npx vite-bundle-analyzer"
+    "analyze": "npm run build && npx vite-bundle-analyzer",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:all": "npm run test:run && npm run test:e2e"
   },
   "dependencies": {
     "@google/generative-ai": "^0.17.1",
@@ -27,19 +35,25 @@
     "tesseract.js": "^5.0.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^24.0.10",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/coverage-v8": "^4.0.18",
     "autoprefixer": "^10.4.16",
     "eslint": "^8.55.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "jsdom": "^27.4.0",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.3.6",
     "typescript": "^5.2.2",
-    "vite": "^5.0.8"
+    "vite": "^5.0.8",
+    "vitest": "^4.0.18"
   }
 }

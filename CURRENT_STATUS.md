@@ -68,7 +68,7 @@
 ## 🚀 ESTADO DEL DESPLIEGUE
 
 ### ✅ Producción Activa
-- **URL**: https://eafedebe.neurovision-33m.pages.dev
+- **URL**: https://2e327790.neurovision-33m.pages.dev
 - **Plataforma**: Cloudflare Pages
 - **Estado**: Funcionando correctamente
 - **Último build**: Exitoso (2.13 segundos)
@@ -172,7 +172,7 @@
 
 ## 📞 ACCESO RÁPIDO
 
-- **🌐 Aplicación**: https://eafedebe.neurovision-33m.pages.dev
+- **🌐 Aplicación**: https://2e327790.neurovision-33m.pages.dev
 - **📖 Documentación**: README.md
 - **🚀 Despliegue**: DEPLOYMENT.md
 - **📊 Estado**: APP_STATUS_LOG.md

@@ -3,7 +3,7 @@
 ## ⚡ Quick Start
 
 ### Opción 1: Acceso Directo
-**Visita**: https://eafedebe.neurovision-33m.pages.dev
+**Visita**: https://flux-studio-ai.pages.dev/
 
 ### Opción 2: Desarrollo Local
 1. **Install Dependencies**
@@ -169,7 +169,7 @@ Los archivos construidos estarán en el directorio `dist` y pueden desplegarse e
 
 - **Versión**: 0.1.0
 - **Estado**: ✅ En producción
-- **URL**: https://eafedebe.neurovision-33m.pages.dev
+- **URL**: https://flux-studio-ai.pages.dev/
 - **Último despliegue**: Exitoso
 - **Dependencias**: Actualizadas y estables
 

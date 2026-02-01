@@ -1,111 +1,249 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   * {
-    @apply border-0;
+    @apply border-brutal-black;
   }
+
+  html {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+  }
+
   body {
-    @apply bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 text-foreground min-h-screen;
-    background-attachment: fixed;
+    @apply bg-brutal-white text-brutal-black min-h-screen;
+    background-image:
+      linear-gradient(90deg, #f0f0f0 1px, transparent 1px),
+      linear-gradient(#f0f0f0 1px, transparent 1px);
+    background-size: 20px 20px;
   }
 }
 
 @layer components {
+  /* NEO BRUTALISM CARDS */
   .card {
-    @apply rounded-2xl border-0 bg-gradient-to-br from-white to-gray-50 text-card-foreground shadow-xl transition-all duration-300;
+    @apply bg-brutal-white border-3 border-brutal-black rounded-none;
+    box-shadow: 4px 4px 0px 0px #000000;
+    transition: all 0.15s ease;
   }
-  
+
   .card:hover {
-    @apply shadow-2xl -translate-y-1;
+    box-shadow: 6px 6px 0px 0px #000000;
+    transform: translate(-2px, -2px);
   }
-  
+
   .card-header {
-    @apply flex flex-col space-y-2 p-4 sm:p-6 lg:p-8 pb-2 sm:pb-4 lg:pb-4;
+    @apply flex flex-col space-y-2 p-4 sm:p-6 border-b-3 border-brutal-black;
   }
-  
+
   .card-title {
-    @apply text-xl sm:text-2xl lg:text-3xl font-bold leading-tight tracking-tight bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent;
+    @apply text-xl sm:text-2xl lg:text-3xl font-bold uppercase tracking-tight text-brutal-black;
   }
-  
+
   .card-description {
-    @apply text-sm sm:text-base text-gray-600 leading-relaxed;
+    @apply text-sm sm:text-base text-brutal-black/70 font-medium;
   }
-  
+
   .card-content {
-    @apply p-4 sm:p-6 lg:p-8 pt-2 sm:pt-4 lg:pt-4;
+    @apply p-4 sm:p-6;
   }
-  
+
+  /* NEO BRUTALISM BUTTONS */
   .btn {
-    @apply inline-flex items-center justify-center whitespace-nowrap rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 transform active:scale-95;
+    @apply inline-flex items-center justify-center whitespace-nowrap text-xs sm:text-sm font-bold uppercase tracking-wide
+           border-3 border-brutal-black rounded-none
+           transition-all duration-150 ease-in-out
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brutal-black focus-visible:ring-offset-2
+           disabled:pointer-events-none disabled:opacity-50;
+    box-shadow: 4px 4px 0px 0px #000000;
   }
-  
+
+  .btn:hover {
+    box-shadow: 6px 6px 0px 0px #000000;
+    transform: translate(-2px, -2px);
+  }
+
+  .btn:active {
+    box-shadow: 2px 2px 0px 0px #000000;
+    transform: translate(2px, 2px);
+  }
+
   .btn-primary {
-    @apply bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg;
+    @apply bg-brutal-yellow text-brutal-black;
   }
-  
+
   .btn-primary:hover {
-    @apply shadow-xl -translate-y-0.5;
+    @apply bg-brutal-lime;
   }
-  
+
   .btn-secondary {
-    @apply bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 shadow-md;
+    @apply bg-brutal-cyan text-brutal-black;
   }
-  
+
   .btn-secondary:hover {
-    @apply shadow-lg -translate-y-0.5;
+    @apply bg-brutal-blue text-brutal-white;
   }
-  
+
   .btn-outline {
-    @apply border-2 border-purple-200 bg-white text-purple-700 shadow-md;
+    @apply bg-brutal-white text-brutal-black;
   }
-  
+
   .btn-outline:hover {
-    @apply shadow-lg bg-purple-50 border-purple-300 -translate-y-0.5;
+    @apply bg-brutal-black text-brutal-white;
   }
-  
+
   .btn-ghost {
-    @apply text-gray-600;
+    @apply bg-transparent text-brutal-black border-0;
+    box-shadow: none;
   }
-  
+
   .btn-ghost:hover {
-    @apply bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 -translate-y-0.5;
+    @apply bg-brutal-yellow;
+    box-shadow: 4px 4px 0px 0px #000000;
   }
-  
+
+  .btn-ghost:active {
+    box-shadow: 2px 2px 0px 0px #000000;
+    transform: translate(2px, 2px);
+  }
+
+  .btn-danger {
+    @apply bg-brutal-red text-brutal-white;
+  }
+
+  .btn-danger:hover {
+    @apply bg-brutal-magenta;
+  }
+
   .btn-sm {
-    @apply h-8 sm:h-10 rounded-lg px-3 sm:px-4 text-xs;
+    @apply h-8 sm:h-10 px-3 sm:px-4 text-xs;
   }
-  
+
   .btn-md {
     @apply h-10 sm:h-12 px-4 sm:px-6 py-2 sm:py-3 text-sm;
   }
-  
+
   .btn-lg {
-    @apply h-12 sm:h-14 rounded-xl px-6 sm:px-8 text-sm sm:text-base;
+    @apply h-12 sm:h-14 px-6 sm:px-8 text-sm sm:text-base;
   }
-  
+
+  /* NEO BRUTALISM UPLOAD ZONE */
   .upload-zone {
-    @apply border-4 border-dashed border-purple-200 rounded-2xl p-6 sm:p-8 lg:p-12 text-center transition-all duration-500 bg-gradient-to-br from-purple-50 to-pink-50;
+    @apply border-4 border-dashed border-brutal-black rounded-none p-6 sm:p-8 lg:p-12 text-center
+           bg-brutal-white transition-all duration-150;
   }
-  
+
   .upload-zone:hover {
-    @apply border-purple-400 bg-gradient-to-br from-purple-100 to-pink-100 shadow-xl;
+    @apply bg-brutal-yellow border-solid;
+    box-shadow: 6px 6px 0px 0px #000000;
+    transform: translate(-2px, -2px);
   }
-  
+
   .upload-zone.drag-over {
-    @apply border-purple-500 bg-gradient-to-br from-purple-200 to-pink-200 shadow-xl;
+    @apply bg-brutal-lime border-solid;
+    box-shadow: 8px 8px 0px 0px #000000;
+    transform: translate(-4px, -4px);
   }
-  
+
+  /* NEO BRUTALISM INPUTS */
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="number"],
+  select,
+  textarea {
+    @apply w-full px-4 py-3 border-3 border-brutal-black rounded-none bg-brutal-white
+           font-medium text-brutal-black placeholder-brutal-black/40
+           focus:outline-none focus:ring-0;
+    box-shadow: 3px 3px 0px 0px #000000;
+    transition: all 0.15s ease;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    box-shadow: 5px 5px 0px 0px #000000;
+    transform: translate(-2px, -2px);
+  }
+
+  /* NEO BRUTALISM RANGE SLIDER */
+  input[type="range"] {
+    @apply w-full h-3 bg-brutal-black rounded-none appearance-none cursor-pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    @apply appearance-none w-6 h-6 bg-brutal-yellow border-3 border-brutal-black rounded-none cursor-pointer;
+    box-shadow: 2px 2px 0px 0px #000000;
+  }
+
+  input[type="range"]::-webkit-slider-thumb:hover {
+    @apply bg-brutal-lime;
+    box-shadow: 3px 3px 0px 0px #000000;
+  }
+
+  /* NEO BRUTALISM CHECKBOX */
+  input[type="checkbox"] {
+    @apply w-5 h-5 border-3 border-brutal-black rounded-none bg-brutal-white appearance-none cursor-pointer;
+    box-shadow: 2px 2px 0px 0px #000000;
+  }
+
+  input[type="checkbox"]:checked {
+    @apply bg-brutal-yellow;
+    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='black' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+  }
+
+  /* FLOATING ELEMENT - Kept for compatibility */
   .floating-element {
     @apply animate-float;
   }
-  
+
+  /* GRADIENT TEXT - Now solid for Neo Brutalism */
   .gradient-text {
-    @apply bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent;
+    @apply text-brutal-black font-black;
   }
 
-  /* Responsive text utilities */
+  /* TEXT ACCENT COLOR */
+  .text-accent {
+    @apply text-brutal-magenta;
+  }
+
+  /* NEO BRUTALISM TAGS/BADGES */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 text-xs font-bold uppercase
+           border-2 border-brutal-black bg-brutal-white;
+    box-shadow: 2px 2px 0px 0px #000000;
+  }
+
+  .badge-primary {
+    @apply bg-brutal-yellow;
+  }
+
+  .badge-secondary {
+    @apply bg-brutal-cyan;
+  }
+
+  .badge-success {
+    @apply bg-brutal-lime;
+  }
+
+  .badge-danger {
+    @apply bg-brutal-red text-brutal-white;
+  }
+
+  /* NEO BRUTALISM MODAL */
+  .modal-overlay {
+    @apply fixed inset-0 bg-brutal-black/80 flex items-center justify-center z-50;
+  }
+
+  .modal-content {
+    @apply bg-brutal-white border-4 border-brutal-black p-6 sm:p-8 w-full max-w-md;
+    box-shadow: 8px 8px 0px 0px #000000;
+  }
+
+  /* RESPONSIVE TEXT UTILITIES */
   .text-responsive-xs {
     @apply text-xs sm:text-sm;
   }
@@ -130,7 +268,7 @@
     @apply text-2xl sm:text-3xl;
   }
 
-  /* Responsive spacing utilities */
+  /* RESPONSIVE SPACING */
   .space-responsive-y {
     @apply space-y-2 sm:space-y-3 lg:space-y-4;
   }
@@ -139,7 +277,6 @@
     @apply space-x-2 sm:space-x-3 lg:space-x-4;
   }
 
-  /* Responsive padding utilities */
   .p-responsive {
     @apply p-3 sm:p-4 lg:p-6;
   }
@@ -152,7 +289,6 @@
     @apply py-3 sm:py-4 lg:py-6;
   }
 
-  /* Responsive margin utilities */
   .m-responsive {
     @apply m-3 sm:m-4 lg:m-6;
   }
@@ -165,7 +301,7 @@
     @apply my-3 sm:my-4 lg:my-6;
   }
 
-  /* Mobile-first responsive grid */
+  /* RESPONSIVE GRID */
   .grid-responsive {
     @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
   }
@@ -178,7 +314,7 @@
     @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
   }
 
-  /* Responsive flex utilities */
+  /* RESPONSIVE FLEX */
   .flex-responsive {
     @apply flex flex-col sm:flex-row;
   }
@@ -187,7 +323,7 @@
     @apply flex flex-col-reverse sm:flex-row;
   }
 
-  /* Responsive gap utilities */
+  /* RESPONSIVE GAP */
   .gap-responsive {
     @apply gap-2 sm:gap-3 lg:gap-4;
   }
@@ -196,7 +332,7 @@
     @apply gap-4 sm:gap-6 lg:gap-8;
   }
 
-  /* Responsive width utilities */
+  /* RESPONSIVE WIDTH */
   .w-responsive {
     @apply w-full sm:w-auto;
   }
@@ -213,7 +349,7 @@
     @apply w-full lg:w-2/3;
   }
 
-  /* Responsive height utilities */
+  /* RESPONSIVE HEIGHT */
   .h-responsive {
     @apply h-auto sm:h-full;
   }
@@ -230,74 +366,59 @@
     @apply h-64 sm:h-72 lg:h-80;
   }
 
-  /* Responsive border radius */
+  /* RESPONSIVE BORDER RADIUS - Neo Brutalism uses none */
   .rounded-responsive {
-    @apply rounded-lg sm:rounded-xl lg:rounded-2xl;
+    @apply rounded-none;
   }
 
-  /* Responsive shadow */
+  /* RESPONSIVE SHADOW - Neo Brutalism solid shadows */
   .shadow-responsive {
-    @apply shadow-md sm:shadow-lg lg:shadow-xl;
+    box-shadow: 4px 4px 0px 0px #000000;
   }
 
-  /* Responsive font weights */
+  /* RESPONSIVE FONT WEIGHTS */
   .font-responsive {
     @apply font-medium sm:font-semibold lg:font-bold;
   }
 
-  /* Responsive line heights */
+  /* RESPONSIVE LINE HEIGHTS */
   .leading-responsive {
     @apply leading-tight sm:leading-snug lg:leading-normal;
   }
 
-  /* Responsive tracking */
+  /* RESPONSIVE TRACKING */
   .tracking-responsive {
     @apply tracking-tight sm:tracking-normal lg:tracking-wide;
   }
 }
 
-:root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 221.2 83.2% 53.3%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222.2 84% 4.9%;
-  --muted: 210 40% 96%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96%;
-  --accent-foreground: 222.2 84% 4.9%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 221.2 83.2% 53.3%;
+/* SCROLLBAR STYLING */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.0%;
-  }
+::-webkit-scrollbar-track {
+  background: #FFFFFF;
+  border: 2px solid #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #FFE500;
+  border: 2px solid #000000;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #BFFF00;
+}
+
+/* SELECTION STYLING */
+::selection {
+  background: #FFE500;
+  color: #000000;
+}
+
+::-moz-selection {
+  background: #FFE500;
+  color: #000000;
 }

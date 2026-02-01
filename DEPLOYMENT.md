@@ -46,7 +46,7 @@ npm run dev
 ### ✅ Option 1: Cloudflare Pages (ACTIVO)
 **Despliegue actual funcionando en producción**
 
-**URL de producción**: https://eafedebe.neurovision-33m.pages.dev
+**URL de producción**: https://2e327790.neurovision-33m.pages.dev
 
 1. **Configuración actual** (`wrangler.toml`):
 ```toml

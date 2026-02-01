@@ -104,3 +104,5 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
+/playwright-report
+/test-results

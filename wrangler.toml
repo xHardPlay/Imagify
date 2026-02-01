@@ -1,12 +1,28 @@
-name = "neurovision"
+name = "flux-studio-ai"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
 # Pages configuration
 pages_build_output_dir = "dist"
 
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "flux-studio-db"
+database_id = "8539207c-6cc9-40e2-981c-de1eb546935a"
+
 [env.production]
-name = "neurovision"
+name = "flux-studio-ai"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "flux-studio-db"
+database_id = "8539207c-6cc9-40e2-981c-de1eb546935a"
 
 [env.preview]
-name = "neurovision-preview" 
+name = "flux-studio-ai-preview"
+
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "flux-studio-db"
+database_id = "8539207c-6cc9-40e2-981c-de1eb546935a"

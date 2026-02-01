@@ -1,6 +1,15 @@
-import React, { useState } from 'react';
-import { Save, X, Eye, EyeOff, ExternalLink } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Save, X, Eye, EyeOff, ExternalLink, RefreshCw, AlertCircle, Loader2 } from 'lucide-react';
 import { APISettings } from '../../types';
+import { api, GeminiModel } from '../../services/api';
+
+interface ModelOption {
+  id: string;
+  displayName: string;
+  description: string;
+  supportsVision: boolean;
+  isRecommended?: boolean;
+}
 
 interface APIKeyManagerProps {
   settings: APISettings | null;
@@ -8,9 +17,18 @@ interface APIKeyManagerProps {
   onCancel: () => void;
 }
 
+// Default fallback models when API is not available
+const DEFAULT_MODELS: ModelOption[] = [
+  { id: 'gemini-1.5-flash', displayName: 'Gemini 1.5 Flash', description: 'Fast & Efficient', supportsVision: true, isRecommended: true },
+  { id: 'gemini-1.5-pro', displayName: 'Gemini 1.5 Pro', description: 'High Performance', supportsVision: true },
+  { id: 'gemini-2.0-flash-exp', displayName: 'Gemini 2.0 Flash', description: 'Experimental', supportsVision: true },
+  { id: 'gemini-pro-vision', displayName: 'Gemini Pro Vision', description: 'Legacy Vision', supportsVision: true },
+  { id: 'gemini-pro', displayName: 'Gemini Pro', description: 'Text Only', supportsVision: false },
+];
+
 const APIKeyManager: React.FC<APIKeyManagerProps> = ({ settings, onSave, onCancel }) => {
-  const [formData, setFormData] = useState<APISettings>({
-    geminiApiKey: settings?.geminiApiKey || '',
+  const [formData, setFormData] = useState({
+    geminiApiKey: '',
     model: settings?.model || 'gemini-1.5-flash',
     maxTokens: settings?.maxTokens || 2000,
     temperature: settings?.temperature || 0.4,
@@ -20,12 +38,69 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ settings, onSave, onCance
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
+  // Model fetching state
+  const [models, setModels] = useState<ModelOption[]>(DEFAULT_MODELS);
+  const [modelsLoading, setModelsLoading] = useState(false);
+  const [modelsError, setModelsError] = useState<string | null>(null);
+  const [showAllModels, setShowAllModels] = useState(false);
+
+  // Fetch models from API
+  const fetchModels = useCallback(async () => {
+    setModelsLoading(true);
+    setModelsError(null);
+
+    try {
+      const response = await api.getModels();
+
+      if (!response.success || !response.data) {
+        throw new Error(response.error || 'Failed to fetch models');
+      }
+
+      const modelOptions: ModelOption[] = response.data.map((model: GeminiModel) => ({
+        id: model.id,
+        displayName: model.displayName,
+        description: '',
+        supportsVision: model.supportsVision,
+        isRecommended: model.isRecommended,
+      }));
+
+      if (modelOptions.length > 0) {
+        setModels(modelOptions);
+
+        // If current model is not in the list, select the first recommended one
+        const currentModelExists = modelOptions.some(m => m.id === formData.model);
+        if (!currentModelExists) {
+          const recommendedModel = modelOptions.find(m => m.isRecommended && m.supportsVision)
+            || modelOptions.find(m => m.supportsVision)
+            || modelOptions[0];
+          setFormData(prev => ({ ...prev, model: recommendedModel.id }));
+        }
+      } else {
+        setModels(DEFAULT_MODELS);
+      }
+    } catch (error) {
+      console.error('Error fetching models:', error);
+      setModelsError(error instanceof Error ? error.message : 'Failed to fetch models');
+      setModels(DEFAULT_MODELS);
+    } finally {
+      setModelsLoading(false);
+    }
+  }, [formData.model]);
+
+  // Fetch models on mount if user has API key configured
+  useEffect(() => {
+    if (settings?.hasApiKey) {
+      fetchModels();
+    }
+  }, []);
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.geminiApiKey.trim()) {
+    // Only require API key if user doesn't have one already and didn't enter a new one
+    if (!settings?.hasApiKey && !formData.geminiApiKey.trim()) {
       newErrors.geminiApiKey = 'API Key is required';
-    } else if (!formData.geminiApiKey.startsWith('AIza')) {
+    } else if (formData.geminiApiKey.trim() && !formData.geminiApiKey.startsWith('AIza')) {
       newErrors.geminiApiKey = 'Invalid Google Gemini API Key format';
     }
 
@@ -46,7 +121,18 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ settings, onSave, onCance
     if (validateForm()) {
       setSaveStatus('saving');
       try {
-        onSave(formData);
+        // Only include API key if user entered a new one
+        const saveData: any = {
+          model: formData.model,
+          maxTokens: formData.maxTokens,
+          temperature: formData.temperature,
+        };
+
+        if (formData.geminiApiKey.trim()) {
+          saveData.geminiApiKey = formData.geminiApiKey;
+        }
+
+        onSave(saveData);
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 2000);
       } catch (error) {
@@ -56,7 +142,7 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ settings, onSave, onCance
     }
   };
 
-  const handleInputChange = (field: keyof APISettings, value: string | number) => {
+  const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
@@ -80,11 +166,13 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ settings, onSave, onCance
         <div className="flex items-start">
           <div className="flex-1">
             <h3 className="text-xs sm:text-sm font-medium text-blue-800">
-              Google Gemini API Key Required
+              Google Gemini API Key {settings?.hasApiKey ? '(Configured)' : 'Required'}
             </h3>
             <p className="mt-1 text-xs sm:text-sm text-blue-700">
-              You need a Google Gemini API key to use image analysis features. 
-              Your API key is stored locally and never sent to our servers.
+              {settings?.hasApiKey
+                ? 'Your API key is securely stored. Enter a new key to update it.'
+                : 'You need a Google Gemini API key to use image analysis features.'}
+              {' '}Your API key is encrypted and stored securely.
             </p>
             <a
               href="https://aistudio.google.com/app/apikey"
@@ -103,7 +191,7 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ settings, onSave, onCance
         {/* API Key */}
         <div>
           <label htmlFor="apiKey" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-            Google Gemini API Key *
+            Google Gemini API Key {settings?.hasApiKey ? '(leave blank to keep current)' : '*'}
           </label>
           <div className="relative">
             <input
@@ -111,7 +199,7 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ settings, onSave, onCance
               type={showApiKey ? 'text' : 'password'}
               value={formData.geminiApiKey}
               onChange={(e) => handleInputChange('geminiApiKey', e.target.value)}
-              placeholder="AIza..."
+              placeholder={settings?.hasApiKey ? '••••••••••••••••' : 'AIza...'}
               className={`w-full px-3 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm ${
                 errors.geminiApiKey ? 'border-red-500' : 'border-gray-300'
               }`}
@@ -135,25 +223,89 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ settings, onSave, onCance
 
         {/* Model Selection */}
         <div>
-          <label htmlFor="model" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-            Model
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label htmlFor="model" className="block text-xs sm:text-sm font-medium text-gray-700">
+              Model
+            </label>
+            <div className="flex items-center gap-2">
+              {modelsLoading && (
+                <span className="flex items-center text-xs text-gray-500">
+                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                  Loading...
+                </span>
+              )}
+              {settings?.hasApiKey && !modelsLoading && (
+                <button
+                  type="button"
+                  onClick={fetchModels}
+                  className="flex items-center text-xs text-blue-600 hover:text-blue-800"
+                  title="Refresh model list"
+                >
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  Refresh
+                </button>
+              )}
+            </div>
+          </div>
+
+          {modelsError && (
+            <div className="mb-2 flex items-center text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
+              <AlertCircle className="h-3 w-3 mr-1 flex-shrink-0" />
+              {modelsError} - Using default models
+            </div>
+          )}
+
           <select
             id="model"
             value={formData.model}
             onChange={(e) => handleInputChange('model', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+            disabled={modelsLoading}
+            className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm ${
+              modelsLoading ? 'bg-gray-100 cursor-wait' : ''
+            }`}
           >
-            <option value="gemini-1.5-flash">🚀 Gemini 1.5 Flash (Recommended - Fast & Efficient)</option>
-            <option value="gemini-1.5-pro">⚡ Gemini 1.5 Pro (High Performance)</option>
-            <option value="gemini-2.0-flash-exp">✨ Gemini 2.0 Flash (Experimental)</option>
-            <option value="gemini-exp-1206">🧪 Gemini Experimental 1206</option>
-            <option value="gemini-pro-vision">👁️ Gemini Pro Vision (Legacy)</option>
-            <option value="gemini-pro">🔧 Gemini Pro (Text Only)</option>
+            {/* Vision-capable models */}
+            <optgroup label="Vision Models (Supports Images)">
+              {models
+                .filter(m => m.supportsVision)
+                .map(model => (
+                  <option key={model.id} value={model.id}>
+                    {model.isRecommended ? '* ' : ''}{model.displayName}
+                    {model.isRecommended ? ' (Recommended)' : ''}
+                  </option>
+                ))}
+            </optgroup>
+
+            {/* Text-only models - show only if toggle is on or if there are any */}
+            {(showAllModels || models.some(m => !m.supportsVision)) && (
+              <optgroup label="Text Only Models">
+                {models
+                  .filter(m => !m.supportsVision)
+                  .map(model => (
+                    <option key={model.id} value={model.id} disabled={!showAllModels}>
+                      {model.displayName} (No image support)
+                    </option>
+                  ))}
+              </optgroup>
+            )}
           </select>
-          <p className="mt-1 text-xs text-gray-500">
-            💡 Gemini 1.5 Flash offers the best balance of speed and accuracy for image analysis
-          </p>
+
+          <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <p className="text-xs text-gray-500">
+              {models.find(m => m.id === formData.model)?.supportsVision
+                ? 'This model supports image analysis'
+                : 'This model does NOT support images'}
+            </p>
+            <label className="flex items-center text-xs text-gray-500 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showAllModels}
+                onChange={(e) => setShowAllModels(e.target.checked)}
+                className="mr-1 h-3 w-3"
+              />
+              Show text-only models
+            </label>
+          </div>
         </div>
 
         {/* Max Tokens */}
@@ -214,8 +366,8 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ settings, onSave, onCance
             type="submit"
             disabled={saveStatus === 'saving'}
             className={`btn btn-md w-full sm:w-auto ${
-              saveStatus === 'saved' 
-                ? 'bg-green-500 hover:bg-green-600 text-white' 
+              saveStatus === 'saved'
+                ? 'bg-green-500 hover:bg-green-600 text-white'
                 : 'btn-primary'
             }`}
           >

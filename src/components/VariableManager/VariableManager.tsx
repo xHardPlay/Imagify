@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Save, X, Type, Hash, Palette, ToggleLeft, List } from 'lucide-react';
 import { Workflow, Variable } from '../../types';
 
@@ -11,6 +11,20 @@ const VariableManager: React.FC<VariableManagerProps> = ({ workflow, onUpdateWor
   const [editingVariable, setEditingVariable] = useState<Variable | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+
+  // Local state for workflow info to avoid API calls on every keystroke
+  const [localName, setLocalName] = useState('');
+  const [localDescription, setLocalDescription] = useState('');
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Sync local state when workflow changes (e.g., switching workflows)
+  useEffect(() => {
+    if (workflow) {
+      setLocalName(workflow.name);
+      setLocalDescription(workflow.description || '');
+      setHasUnsavedChanges(false);
+    }
+  }, [workflow?.id]);
 
   const defaultVariable: Omit<Variable, 'id'> = {
     name: '',
@@ -87,14 +101,38 @@ const VariableManager: React.FC<VariableManagerProps> = ({ workflow, onUpdateWor
     setVariableForm(prev => ({ ...prev, [field]: value }));
   };
 
-  const updateWorkflowInfo = (field: 'name' | 'description', value: string) => {
-    if (!workflow) return;
+  // Update local state only (no API call)
+  const updateLocalName = (value: string) => {
+    setLocalName(value);
+    setHasUnsavedChanges(value !== workflow?.name || localDescription !== (workflow?.description || ''));
+  };
+
+  const updateLocalDescription = (value: string) => {
+    setLocalDescription(value);
+    setHasUnsavedChanges(localName !== workflow?.name || value !== (workflow?.description || ''));
+  };
+
+  // Save workflow info to API
+  const handleSaveWorkflowInfo = async () => {
+    if (!workflow || !hasUnsavedChanges) return;
     setSaveStatus('saving');
-    onUpdateWorkflow({ [field]: value });
-    setTimeout(() => {
+    try {
+      await onUpdateWorkflow({ name: localName, description: localDescription });
+      setHasUnsavedChanges(false);
       setSaveStatus('saved');
-      setTimeout(() => setSaveStatus('idle'), 1000);
-    }, 300);
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch {
+      setSaveStatus('idle');
+    }
+  };
+
+  // Discard changes
+  const handleDiscardChanges = () => {
+    if (workflow) {
+      setLocalName(workflow.name);
+      setLocalDescription(workflow.description || '');
+      setHasUnsavedChanges(false);
+    }
   };
 
   if (!workflow) {
@@ -130,24 +168,27 @@ const VariableManager: React.FC<VariableManagerProps> = ({ workflow, onUpdateWor
                 ✨ Configure your workflow name, description, and variables
               </p>
             </div>
-            {saveStatus !== 'idle' && (
-              <div className="flex items-center space-x-2 text-xs sm:text-sm">
-                {saveStatus === 'saving' && (
-                  <>
-                    <div className="h-3 w-3 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-purple-600">Saving...</span>
-                  </>
-                )}
-                {saveStatus === 'saved' && (
-                  <>
-                    <svg className="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="text-green-600">Saved</span>
-                  </>
-                )}
-              </div>
-            )}
+            <div className="flex items-center space-x-2 text-xs sm:text-sm">
+              {saveStatus === 'saving' && (
+                <>
+                  <div className="h-3 w-3 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-purple-600">Saving...</span>
+                </>
+              )}
+              {saveStatus === 'saved' && (
+                <>
+                  <svg className="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-green-600">Saved!</span>
+                </>
+              )}
+              {hasUnsavedChanges && saveStatus === 'idle' && (
+                <span className="px-2 py-1 bg-brutal-yellow border-2 border-brutal-black text-xs font-bold">
+                  UNSAVED
+                </span>
+              )}
+            </div>
           </div>
         </div>
         <div className="card-content space-y-4">
@@ -158,8 +199,8 @@ const VariableManager: React.FC<VariableManagerProps> = ({ workflow, onUpdateWor
             <input
               id="workflowName"
               type="text"
-              value={workflow.name}
-              onChange={(e) => updateWorkflowInfo('name', e.target.value)}
+              value={localName}
+              onChange={(e) => updateLocalName(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Enter workflow name..."
             />
@@ -170,13 +211,33 @@ const VariableManager: React.FC<VariableManagerProps> = ({ workflow, onUpdateWor
             </label>
             <textarea
               id="workflowDescription"
-              value={workflow.description || ''}
-              onChange={(e) => updateWorkflowInfo('description', e.target.value)}
+              value={localDescription}
+              onChange={(e) => updateLocalDescription(e.target.value)}
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Describe what this workflow analyzes..."
             />
           </div>
+          {/* Save/Discard buttons */}
+          {hasUnsavedChanges && (
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-2 border-t border-gray-200">
+              <button
+                onClick={handleDiscardChanges}
+                className="btn btn-outline btn-sm w-full sm:w-auto"
+              >
+                <X className="h-4 w-4 mr-2" />
+                Discard
+              </button>
+              <button
+                onClick={handleSaveWorkflowInfo}
+                disabled={!localName.trim() || saveStatus === 'saving'}
+                className="btn btn-primary btn-sm w-full sm:w-auto"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Save Workflow
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

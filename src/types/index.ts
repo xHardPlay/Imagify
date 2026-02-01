@@ -37,10 +37,12 @@ export interface Workflow {
 }
 
 export interface APISettings {
-  geminiApiKey: string;
+  geminiApiKey?: string;
+  geminiApiKeyMasked?: string;
   model: string;
   maxTokens: number;
   temperature: number;
+  hasApiKey?: boolean;
 }
 
 export interface AppState {

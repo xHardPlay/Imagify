@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Upload, ImageIcon, Loader, Settings } from 'lucide-react';
 import { Workflow, APISettings, ImageAnalysis, Variable, VariableResult } from '../../types';
+import { api } from '../../services/api';
 
 interface ImageUploadProps {
   workflow: Workflow;
@@ -10,12 +11,12 @@ interface ImageUploadProps {
   onProcessingChange: (isProcessing: boolean) => void;
 }
 
-const ImageUpload: React.FC<ImageUploadProps> = ({ 
-  workflow, 
-  apiSettings, 
-  onImageAnalyzed, 
-  isProcessing, 
-  onProcessingChange 
+const ImageUpload: React.FC<ImageUploadProps> = ({
+  workflow,
+  apiSettings,
+  onImageAnalyzed,
+  isProcessing,
+  onProcessingChange
 }) => {
 
   // Handle clipboard paste
@@ -38,20 +39,21 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
     document.addEventListener('paste', handlePaste);
     return () => document.removeEventListener('paste', handlePaste);
-  }, [workflow, apiSettings, isProcessing]); // Dependencies for handleImageUpload
+  }, [workflow, apiSettings, isProcessing]);
 
   const handleImageUpload = async (file: File) => {
-    if (!apiSettings?.geminiApiKey) {
+    // Check if user has configured API key
+    if (!apiSettings?.hasApiKey) {
       alert('Please configure your Gemini API key first.');
       return;
     }
 
     onProcessingChange(true);
-    
+
     try {
       // Compress and convert file to base64
       const compressedBase64 = await compressAndConvertToBase64(file);
-      
+
       // Create image analysis object
       const imageAnalysis: ImageAnalysis = {
         id: Date.now().toString(),
@@ -62,27 +64,22 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         results: [],
         status: 'processing'
       };
-      
-      // Call Gemini API for analysis
-      const results = await analyzeImageWithGemini(compressedBase64, workflow.variables, apiSettings);
-      
-      console.log('Analysis results:', results); // Debug log
-      
+
+      // Call API proxy for analysis
+      const results = await analyzeImageWithProxy(compressedBase64, workflow.variables, apiSettings);
+
       // Update image analysis with results
       imageAnalysis.results = results;
       imageAnalysis.status = 'completed';
-      
-      console.log('About to call onImageAnalyzed with:', imageAnalysis);
-      console.log('Results being passed:', results);
-      
+
       // Force a small delay to ensure state is properly set
       setTimeout(() => {
         onImageAnalyzed(imageAnalysis);
       }, 100);
-      
+
     } catch (error) {
       console.error('Error processing image:', error);
-      
+
       // Create error analysis object
       const errorAnalysis: ImageAnalysis = {
         id: Date.now().toString(),
@@ -94,7 +91,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         status: 'error',
         error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
-      
+
       onImageAnalyzed(errorAnalysis);
       alert(`Failed to process image: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
@@ -107,12 +104,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
-      
+
       img.onload = () => {
         // Calculate new dimensions (max 1024px on longest side)
         const maxSize = 1024;
         let { width, height } = img;
-        
+
         if (width > height) {
           if (width > maxSize) {
             height = (height * maxSize) / width;
@@ -124,21 +121,21 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             height = maxSize;
           }
         }
-        
+
         // Set canvas dimensions
         canvas.width = width;
         canvas.height = height;
-        
+
         // Draw and compress image
         ctx?.drawImage(img, 0, 0, width, height);
-        
+
         // Convert to base64 with compression (0.8 quality)
         canvas.toBlob((blob) => {
           if (!blob) {
             reject(new Error('Failed to compress image'));
             return;
           }
-          
+
           const reader = new FileReader();
           reader.onload = () => {
             const base64 = reader.result as string;
@@ -149,29 +146,26 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           reader.readAsDataURL(blob);
         }, 'image/jpeg', 0.8);
       };
-      
+
       img.onerror = reject;
       img.src = URL.createObjectURL(file);
     });
   };
 
-  const analyzeImageWithGemini = async (
-    base64Image: string, 
-    variables: Variable[], 
-    apiSettings: APISettings
+  const analyzeImageWithProxy = async (
+    base64Image: string,
+    variables: Variable[],
+    settings: APISettings
   ): Promise<VariableResult[]> => {
-    console.log('Starting Gemini analysis with variables:', variables);
-    
     if (variables.length === 0) {
-      console.log('No variables defined, returning empty results');
       return [];
     }
-    
+
     // Build prompt based on workflow variables
-    const variablePrompts = variables.map(variable => 
+    const variablePrompts = variables.map(variable =>
       `- ${variable.name} (${variable.type}): ${variable.description || 'Extract this information'}`
     ).join('\n');
-    
+
     const prompt = `Please analyze this image and extract the following information. Return your response as a valid JSON object only, with no additional text or markdown formatting.
 
 Extract these variables:
@@ -187,96 +181,58 @@ Response format (JSON only):
   }
 }`;
 
-    console.log('Sending prompt to Gemini:', prompt);
-    console.log('Using model:', apiSettings.model);
-    
-    const requestBody = {
-      contents: [{
-        parts: [
-          {
-            text: prompt
-          },
-          {
-            inline_data: {
-              mime_type: 'image/jpeg',
-              data: base64Image
-            }
+    const contents = [{
+      parts: [
+        { text: prompt },
+        {
+          inline_data: {
+            mime_type: 'image/jpeg',
+            data: base64Image
           }
-        ]
-      }],
-      generationConfig: {
-        temperature: apiSettings.temperature,
-        maxOutputTokens: apiSettings.maxTokens,
-      }
+        }
+      ]
+    }];
+
+    const generationConfig = {
+      temperature: settings.temperature,
+      maxOutputTokens: settings.maxTokens,
     };
-    
-    console.log('Request body:', JSON.stringify(requestBody, null, 2));
-
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${apiSettings.model}:generateContent?key=${apiSettings.geminiApiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody)
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Gemini API error response:', errorText);
-      
-      // Handle specific quota errors
-      if (response.status === 429 || errorText.includes('quota') || errorText.includes('QUOTA_EXCEEDED')) {
-        throw new Error('🚫 Google API quota exceeded! Please try again later or check your billing settings.');
-      }
-      
-      if (response.status === 403) {
-        throw new Error('🔑 API access denied. Please check your API key permissions.');
-      }
-      
-      if (response.status === 400) {
-        throw new Error('📷 Invalid image format or request. Please try a different image.');
-      }
-      
-      throw new Error(`🔥 API Error: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    console.log('Gemini API response:', data);
-    
-    const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    
-    if (!generatedText) {
-      console.error('No text in Gemini response');
-      throw new Error('No response from Gemini API');
-    }
-    
-    console.log('Generated text from Gemini:', generatedText);
 
     try {
-      // Try to extract JSON from response
+      const response = await api.analyzeImage(contents, generationConfig);
+
+      if (!response.success || !response.data) {
+        throw new Error(response.error || 'Failed to analyze image');
+      }
+
+      const data = response.data;
+      const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (!generatedText) {
+        throw new Error('No response from Gemini API');
+      }
+
+      // Parse the response
       let jsonStr = generatedText.trim();
-      
+
       // Remove markdown code blocks if present
       const jsonMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
       if (jsonMatch) {
         jsonStr = jsonMatch[1].trim();
       }
-      
+
       // Find JSON object
       const jsonObjectMatch = jsonStr.match(/\{[\s\S]*\}/);
       if (jsonObjectMatch) {
         jsonStr = jsonObjectMatch[0];
       }
-      
-      console.log('Attempting to parse JSON:', jsonStr);
+
       const analysisResults = JSON.parse(jsonStr);
-      console.log('Parsed analysis results:', analysisResults);
-      
+
       // Convert to VariableResult format
       const results: VariableResult[] = variables.map(variable => {
         const result = analysisResults[variable.name];
-        console.log(`Processing variable '${variable.name}':`, result);
-        
+
         return {
           variableId: variable.id,
           variableName: variable.name,
@@ -285,28 +241,27 @@ Response format (JSON only):
           source: 'ai' as const
         };
       });
-      
-      console.log('Final processed results:', results);
+
       return results;
-      
-    } catch (parseError) {
-      console.error('Error parsing Gemini response:', parseError);
-      console.log('Raw response that failed to parse:', generatedText);
-      
-      // Fallback: create results with error info
-      const fallbackResults: VariableResult[] = variables.map(variable => ({
-        variableId: variable.id,
-        variableName: variable.name,
-        value: `Parse error: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`,
-        confidence: 0,
-        source: 'ai' as const
-      }));
-      
-      return fallbackResults;
+
+    } catch (error) {
+      console.error('Error in analyzeImageWithProxy:', error);
+
+      // Check for specific error types
+      if (error instanceof Error) {
+        if (error.message.includes('quota') || error.message.includes('QUOTA_EXCEEDED')) {
+          throw new Error('API quota exceeded! Please try again later or check your billing settings.');
+        }
+        if (error.message.includes('401') || error.message.includes('403')) {
+          throw new Error('API access denied. Please check your API key.');
+        }
+      }
+
+      throw error;
     }
   };
 
-  if (!apiSettings?.geminiApiKey) {
+  if (!apiSettings?.hasApiKey) {
     return (
       <div className="card">
         <div className="card-content">
@@ -316,18 +271,18 @@ Response format (JSON only):
               <div className="absolute inset-0 h-20 w-20 mx-auto bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-xl animate-pulse"></div>
             </div>
             <h3 className="text-2xl font-bold gradient-text mb-4">
-              🔑 API Key Required
+              API Key Required
             </h3>
             <p className="text-purple-600/70 text-lg leading-relaxed max-w-md mx-auto">
-              ✨ Please configure your Google Gemini API key in the settings to unlock the magic of AI-powered image analysis!
+              Please configure your Google Gemini API key in the settings to unlock AI-powered image analysis!
             </p>
             <div className="mt-8">
-              <button 
+              <button
                 onClick={() => {/* This should open settings */}}
                 className="btn btn-primary btn-lg group"
               >
                 <Settings className="h-5 w-5 mr-2 group-hover:animate-spin" />
-                🚀 Open Settings
+                Open Settings
               </button>
             </div>
           </div>
@@ -346,7 +301,7 @@ Response format (JSON only):
           </p>
         </div>
         <div className="card-content">
-          <div 
+          <div
             className="upload-zone p-6 sm:p-8 lg:p-12"
             onDragOver={(e) => {
               e.preventDefault();
@@ -378,15 +333,15 @@ Response format (JSON only):
                 </div>
               )}
               <h3 className="text-lg sm:text-xl lg:text-2xl font-bold gradient-text mb-2 sm:mb-3">
-                {isProcessing ? '🚀 Processing image...' : '📸 Upload your image'}
+                {isProcessing ? 'Processing image...' : 'Upload your image'}
               </h3>
               <p className="text-purple-600/70 mb-6 sm:mb-8 text-sm sm:text-base lg:text-lg">
-                {isProcessing 
-                  ? '🤖 Our AI is analyzing your image, please wait...' 
-                  : '✨ Drag and drop an image here, click to select, or press Ctrl+V to paste from clipboard'
+                {isProcessing
+                  ? 'Our AI is analyzing your image, please wait...'
+                  : 'Drag and drop an image here, click to select, or press Ctrl+V to paste from clipboard'
                 }
               </p>
-              <button 
+              <button
                 className="btn btn-primary btn-md sm:btn-lg group w-full sm:w-auto"
                 disabled={isProcessing}
                 onClick={() => {
@@ -401,21 +356,21 @@ Response format (JSON only):
                 }}
               >
                 <Upload className="h-4 w-4 sm:h-5 sm:w-5 mr-2 group-hover:animate-bounce" />
-                {isProcessing ? '🔄 Processing...' : '🎯 Choose File'}
+                {isProcessing ? 'Processing...' : 'Choose File'}
               </button>
             </div>
           </div>
-          
+
           {workflow.variables.length === 0 && (
             <div className="mt-4 sm:mt-6 p-4 sm:p-6 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-2xl shadow-lg">
               <div className="flex items-start sm:items-center space-x-3">
-                <div className="text-xl sm:text-2xl flex-shrink-0">⚠️</div>
+                <div className="text-xl sm:text-2xl flex-shrink-0">Warning</div>
                 <div>
                   <p className="text-xs sm:text-sm font-semibold text-yellow-800 mb-1">
                     No variables defined!
                   </p>
                   <p className="text-xs sm:text-sm text-yellow-700">
-                    🎯 Add variables to your workflow to extract specific information from images.
+                    Add variables to your workflow to extract specific information from images.
                   </p>
                 </div>
               </div>

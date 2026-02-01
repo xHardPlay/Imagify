@@ -5,12 +5,12 @@ export interface DefaultConfig {
   workflows: Workflow[];
 }
 
-// Configuración por defecto hardcodeada
+// Configuración por defecto desde variables de entorno
 const DEFAULT_CONFIG = {
-  geminiApiKey: "AIzaSyDZQrfructfSRUKela-JlWAi6JqMdDgJ0I",
-  model: "gemini-1.5-flash",
-  maxTokens: 2000,
-  temperature: 0.4
+  geminiApiKey: import.meta.env.VITE_GEMINI_API_KEY || "",
+  model: import.meta.env.VITE_GEMINI_MODEL || "gemini-1.5-flash",
+  maxTokens: parseInt(import.meta.env.VITE_MAX_TOKENS || "2000"),
+  temperature: parseFloat(import.meta.env.VITE_TEMPERATURE || "0.4")
 };
 
 const DEFAULT_WORKFLOWS = [
@@ -131,7 +131,7 @@ export const loadDefaultConfig = (): DefaultConfig => {
 };
 
 export const shouldLoadDefaults = (): boolean => {
-  const appState = localStorage.getItem('imagify-app-state');
+  const appState = localStorage.getItem('flux-studio-state');
   console.log('shouldLoadDefaults - appState from localStorage:', appState);
   
   if (!appState) {
@@ -166,7 +166,7 @@ export const initializeAppWithDefaults = () => {
       isProcessing: false,
     };
     
-    localStorage.setItem('imagify-app-state', JSON.stringify(initialAppState));
+    localStorage.setItem('flux-studio-state', JSON.stringify(initialAppState));
     
     console.log('App initialized with default configuration');
     console.log('Default workflows loaded:', defaultConfig.workflows.length);

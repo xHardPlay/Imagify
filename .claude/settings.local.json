@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(dir:*)",
+      "Bash(ls:*)",
+      "Bash(npx wrangler:*)",
+      "Bash(CLOUDFLARE_ACCOUNT_ID=d670e0301a1e90ef83521e14bcff6e77 npx wrangler pages deploy:*)",
+      "Bash(set CLOUDFLARE_ACCOUNT_ID=d670e0301a1e90ef83521e14bcff6e77)",
+      "Bash(npm run deploy:cloudflare:*)",
+      "Bash(node:*)",
+      "Bash(curl:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run test:run:*)",
+      "Bash(npx playwright install:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(del cookies.txt)"
+    ]
+  }
+}

@@ -1,157 +1,134 @@
-import { useState, useEffect } from 'react';
-import { Settings, ImageIcon, Zap, Database, Trash2, Menu, X } from 'lucide-react';
-import { AppState, Workflow, ImageAnalysis } from './types';
+import { useState } from 'react';
+import { Settings, ImageIcon, Zap, Database, Trash2, Menu, X, Loader2 } from 'lucide-react';
+import { Workflow, ImageAnalysis } from './types';
 import ImageUpload from './components/ImageUpload/ImageUpload';
 import VariableManager from './components/VariableManager/VariableManager';
 import ResultsDisplay from './components/ResultsDisplay/ResultsDisplay';
 import APIKeyManager from './components/APIKeyManager/APIKeyManager';
-import { useLocalStorage } from './hooks/useLocalStorage';
+import { useAppState } from './hooks/useAppState';
 import ImportExportModal from './components/ImportExportModal';
-import { loadDefaultConfig, shouldLoadDefaults } from './services/defaultConfig';
+import UserMenu from './components/UserMenu';
 
 function App() {
-
-  const [appState, setAppState] = useLocalStorage<AppState>('imagify-app-state', {
-    workflows: [],
-    currentWorkflow: null,
-    currentImage: null,
-    apiSettings: null,
-    isProcessing: false,
-  });
+  const {
+    appState,
+    isLoading,
+    error,
+    createWorkflow,
+    updateWorkflow,
+    deleteWorkflow,
+    updateSettings,
+    selectWorkflow,
+    setCurrentImage,
+    setIsProcessing,
+  } = useAppState();
 
   const [showAPISettings, setShowAPISettings] = useState(false);
   const [activeTab, setActiveTab] = useState<'workflow' | 'image' | 'results'>('workflow');
   const [showImportExport, setShowImportExport] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Initialize app with default configuration on first load
-  useEffect(() => {
-    console.log('App loaded with workflows:', appState.workflows.length);
-    console.log('Current workflow:', appState.currentWorkflow?.name);
-    
-    // Check if we need to load defaults
-    if (shouldLoadDefaults()) {
-      console.log('Loading defaults automatically...');
-      const defaultConfig = loadDefaultConfig();
-      console.log('Default config loaded:', defaultConfig);
-      
-      updateAppState({
-        workflows: defaultConfig.workflows,
-        currentWorkflow: defaultConfig.workflows.length > 0 ? defaultConfig.workflows[0] : null,
-        apiSettings: defaultConfig.apiSettings
-      });
-    }
-  }, []);
-
-  const updateAppState = (updates: Partial<AppState>) => {
-    console.log('updateAppState called with updates:', updates);
-    console.log('Previous state:', appState);
-    
-    setAppState(prev => {
-      const newState = { ...prev, ...updates };
-      console.log('New state after update:', newState);
-      return newState;
-    });
-  };
-
-  const createNewWorkflow = () => {
-    const newWorkflow: Workflow = {
-      id: Date.now().toString(),
-      name: 'New Workflow',
-      description: '',
-      variables: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    
-    updateAppState({
-      workflows: [...appState.workflows, newWorkflow],
-      currentWorkflow: newWorkflow,
-    });
+  const handleCreateNewWorkflow = async () => {
+    await createWorkflow('New Workflow', '');
     setActiveTab('workflow');
   };
 
-  const selectWorkflow = (workflow: Workflow) => {
-    updateAppState({ currentWorkflow: workflow });
+  const handleSelectWorkflow = (workflow: Workflow) => {
+    selectWorkflow(workflow);
     setActiveTab('workflow');
-    setMobileMenuOpen(false); // Close mobile menu when selecting workflow
+    setMobileMenuOpen(false);
   };
 
-  const deleteWorkflow = (workflowId: string) => {
+  const handleDeleteWorkflow = async (workflowId: string) => {
     if (window.confirm('Are you sure you want to delete this workflow? This action cannot be undone.')) {
-      const updatedWorkflows = appState.workflows.filter(w => w.id !== workflowId);
-      const newCurrentWorkflow = appState.currentWorkflow?.id === workflowId ? null : appState.currentWorkflow;
-      
-      updateAppState({
-        workflows: updatedWorkflows,
-        currentWorkflow: newCurrentWorkflow,
-        currentImage: null // Clear current image if workflow is deleted
-      });
-      
-      if (newCurrentWorkflow === null) {
+      await deleteWorkflow(workflowId);
+      if (appState.currentWorkflow === null) {
         setActiveTab('workflow');
       }
     }
   };
 
-  const updateCurrentWorkflow = (updates: Partial<Workflow>) => {
+  const handleUpdateCurrentWorkflow = async (updates: Partial<Workflow>) => {
     if (!appState.currentWorkflow) return;
-    
-    const updatedWorkflow = {
-      ...appState.currentWorkflow,
-      ...updates,
-      updatedAt: new Date(),
-    };
-    
-    const updatedWorkflows = appState.workflows.map(w => 
-      w.id === updatedWorkflow.id ? updatedWorkflow : w
-    );
-    
-    updateAppState({
-      workflows: updatedWorkflows,
-      currentWorkflow: updatedWorkflow,
-    });
+    await updateWorkflow(appState.currentWorkflow.id, updates);
   };
 
-  const setCurrentImage = (image: ImageAnalysis | null) => {
-    console.log('setCurrentImage called with:', image);
-    console.log('Current appState before update:', appState);
-    
-    updateAppState({ currentImage: image });
-    
+  const handleSetCurrentImage = (image: ImageAnalysis | null) => {
+    setCurrentImage(image);
     if (image) {
-      console.log('Switching to results tab');
       setActiveTab('results');
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
-      {/* Floating Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-10 left-10 w-32 h-32 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-xl animate-float"></div>
-        <div className="absolute top-1/3 right-10 w-40 h-40 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full blur-xl animate-float" style={{animationDelay: '2s'}}></div>
-        <div className="absolute bottom-20 left-1/4 w-24 h-24 bg-gradient-to-r from-pink-400/20 to-blue-400/20 rounded-full blur-xl animate-float" style={{animationDelay: '4s'}}></div>
+  const handleSaveSettings = async (settings: any) => {
+    try {
+      await updateSettings({
+        geminiApiKey: settings.geminiApiKey,
+        model: settings.model,
+        maxTokens: settings.maxTokens,
+        temperature: settings.temperature,
+      });
+      setShowAPISettings(false);
+    } catch (err) {
+      console.error('Failed to save settings:', err);
+    }
+  };
+
+  // Show loading state while fetching initial data
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-brutal-cyan mx-auto mb-4" />
+          <p className="font-bold uppercase">Loading...</p>
+        </div>
       </div>
-      
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="card max-w-md">
+          <div className="card-content text-center">
+            <p className="text-brutal-red font-bold mb-4">{error}</p>
+            <button onClick={() => window.location.reload()} className="btn btn-primary">
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      {/* Neo Brutalism Background Shapes */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-20 left-10 w-24 h-24 sm:w-32 sm:h-32 bg-brutal-yellow border-4 border-brutal-black rotate-12" style={{boxShadow: '4px 4px 0px 0px #000000'}}></div>
+        <div className="absolute top-1/4 right-5 sm:right-10 w-28 h-28 sm:w-40 sm:h-40 bg-brutal-cyan border-4 border-brutal-black -rotate-6" style={{boxShadow: '4px 4px 0px 0px #000000'}}></div>
+        <div className="absolute bottom-40 left-1/4 w-16 h-16 sm:w-24 sm:h-24 bg-brutal-magenta border-4 border-brutal-black rotate-45" style={{boxShadow: '4px 4px 0px 0px #000000'}}></div>
+        <div className="absolute top-2/3 right-1/4 w-14 h-14 sm:w-20 sm:h-20 bg-brutal-lime border-4 border-brutal-black -rotate-12" style={{boxShadow: '4px 4px 0px 0px #000000'}}></div>
+      </div>
+
       {/* Header */}
-      <header className="relative bg-white/80 backdrop-blur-lg shadow-lg border-b border-white/20">
+      <header className="relative z-10 bg-brutal-white border-b-4 border-brutal-black" style={{boxShadow: '0 4px 0px 0px #000000'}}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 sm:h-20">
             <div className="flex items-center space-x-2 sm:space-x-4">
-              <div className="relative">
-                <ImageIcon className="h-8 w-8 sm:h-10 sm:w-10 text-purple-600 animate-pulse" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full animate-ping"></div>
+              <div className="relative p-2 bg-brutal-yellow border-3 border-brutal-black" style={{boxShadow: '3px 3px 0px 0px #000000'}}>
+                <ImageIcon className="h-6 w-6 sm:h-8 sm:w-8 text-brutal-black" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Neuro-Vision</h1>
-                <span className="text-xs sm:text-sm text-purple-600/70 font-medium">✨ AI-Powered Image Analysis by Carlos Ezequiel Centurion.</span>
+                <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight">FLUX <span className="text-brutal-magenta">Studio</span></h1>
+                <span className="text-xs sm:text-sm font-bold uppercase tracking-wide">AI-Powered Image Analysis</span>
               </div>
               <div className="sm:hidden">
-                <h1 className="text-xl font-bold gradient-text">Neuro-Vision</h1>
+                <h1 className="text-xl font-black uppercase">FLUX <span className="text-brutal-magenta">Studio</span></h1>
               </div>
             </div>
-            
+
             {/* Desktop Menu */}
             <div className="hidden sm:flex items-center space-x-2 lg:space-x-4">
               <button
@@ -169,10 +146,12 @@ function App() {
                 <Database className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span className="hidden lg:inline">Import/Export</span>
               </button>
+              <UserMenu />
             </div>
 
             {/* Mobile Menu Button */}
-            <div className="sm:hidden">
+            <div className="sm:hidden flex items-center space-x-2">
+              <UserMenu />
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="btn btn-ghost btn-sm"
@@ -184,26 +163,26 @@ function App() {
 
           {/* Mobile Menu */}
           {mobileMenuOpen && (
-            <div className="sm:hidden border-t border-gray-200 py-4 space-y-2">
+            <div className="sm:hidden border-t-3 border-brutal-black py-4 space-y-2 bg-brutal-white">
               <button
                 onClick={() => {
                   setShowAPISettings(!showAPISettings);
                   setMobileMenuOpen(false);
                 }}
-                className="w-full btn btn-ghost btn-sm justify-start"
+                className="w-full btn btn-outline btn-sm justify-start"
               >
                 <Settings className="h-4 w-4 mr-2" />
-                Settings
+                SETTINGS
               </button>
               <button
                 onClick={() => {
                   setShowImportExport(true);
                   setMobileMenuOpen(false);
                 }}
-                className="w-full btn btn-ghost btn-sm justify-start"
+                className="w-full btn btn-outline btn-sm justify-start"
               >
                 <Database className="h-4 w-4 mr-2" />
-                Import/Export
+                IMPORT/EXPORT
               </button>
             </div>
           )}
@@ -212,14 +191,11 @@ function App() {
 
       {/* API Settings Modal */}
       {showAPISettings && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-300 p-4">
-          <div className="bg-white/95 backdrop-blur-lg rounded-2xl p-4 sm:p-8 w-full max-w-md shadow-2xl border border-white/20 transform animate-in zoom-in duration-300">
+        <div className="fixed inset-0 bg-brutal-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-brutal-white border-4 border-brutal-black p-4 sm:p-8 w-full max-w-md" style={{boxShadow: '8px 8px 0px 0px #000000'}}>
             <APIKeyManager
               settings={appState.apiSettings}
-              onSave={(settings) => {
-                updateAppState({ apiSettings: settings });
-                setShowAPISettings(false);
-              }}
+              onSave={handleSaveSettings}
               onCancel={() => setShowAPISettings(false)}
             />
           </div>
@@ -229,98 +205,66 @@ function App() {
       {showImportExport && (
         <ImportExportModal
           appState={appState}
-          setAppState={setAppState}
+          setAppState={() => {}} // Import/export needs to be updated for API
           onClose={() => setShowImportExport(false)}
         />
       )}
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
-        {/* Debug Info - Always Visible */}
-        <div className="mb-4 p-3 bg-gray-100 rounded-lg text-xs sm:text-sm">
-          <strong>Debug Info:</strong> {appState.workflows.length} workflows saved | 
-          API: {appState.apiSettings ? '✓ Configured' : '❌ Not configured'} |
-          <button 
-            onClick={() => {
-              if (window.confirm('Are you sure you want to reset all data? This cannot be undone.')) {
-                localStorage.removeItem('imagify-app-state');
-                window.location.reload();
-              }
-            }}
-            className="ml-2 text-red-600 hover:text-red-800"
-          >
-            Reset All Data
-          </button>
-          <button 
-            onClick={() => {
-              if (window.confirm('Load default workflows?')) {
-                const defaultConfig = loadDefaultConfig();
-                console.log('Loading default config:', defaultConfig);
-                updateAppState({
-                  workflows: defaultConfig.workflows,
-                  currentWorkflow: defaultConfig.workflows.length > 0 ? defaultConfig.workflows[0] : null,
-                  apiSettings: defaultConfig.apiSettings
-                });
-              }
-            }}
-            className="ml-2 text-blue-600 hover:text-blue-800"
-          >
-            Load Default Workflows
-          </button>
-        </div>
-        
+      <main className="relative z-10 flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 w-full">
         {/* Mobile Layout */}
         <div className="block lg:hidden">
           {/* Mobile Workflows Section */}
-          <div className="card mb-6 animate-in slide-in-from-top duration-500">
+          <div className="card mb-6">
             <div className="card-header">
-              <h2 className="card-title text-xl sm:text-2xl">🔥 Workflows</h2>
+              <h2 className="card-title text-xl sm:text-2xl">WORKFLOWS</h2>
               <p className="card-description text-sm">
                 Create and manage your AI analysis workflows
                 {appState.workflows.length > 0 && (
-                  <span className="block text-xs text-green-600 mt-1">
-                    ✓ {appState.workflows.length} workflow{appState.workflows.length > 1 ? 's' : ''} saved locally
+                  <span className="inline-block ml-2 px-2 py-1 bg-brutal-lime border-2 border-brutal-black text-xs font-bold" style={{boxShadow: '2px 2px 0px 0px #000000'}}>
+                    {appState.workflows.length} SAVED
                   </span>
                 )}
               </p>
             </div>
             <div className="card-content">
               <button
-                onClick={createNewWorkflow}
-                className="btn btn-primary btn-md w-full mb-4 group"
+                onClick={handleCreateNewWorkflow}
+                className="btn btn-primary btn-md w-full mb-4"
               >
-                <Zap className="h-4 w-4 sm:h-5 sm:w-5 mr-2 group-hover:animate-bounce" />
-                ✨ New Workflow
+                <Zap className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                NEW WORKFLOW
               </button>
-              
+
               <div className="space-y-2">
-                {appState.workflows.map((workflow, index) => (
+                {appState.workflows.map((workflow) => (
                   <div
                     key={workflow.id}
-                    className={`relative p-3 sm:p-4 rounded-xl text-sm transition-all duration-300 group ${
+                    className={`relative p-3 sm:p-4 text-sm transition-all duration-150 group border-3 border-brutal-black ${
                       appState.currentWorkflow?.id === workflow.id
-                        ? 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 shadow-lg scale-105'
-                        : 'hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 hover:shadow-md hover:scale-102'
+                        ? 'bg-brutal-cyan'
+                        : 'bg-brutal-white hover:bg-brutal-yellow'
                     }`}
-                    style={{animationDelay: `${index * 100}ms`}}
+                    style={{boxShadow: appState.currentWorkflow?.id === workflow.id ? '4px 4px 0px 0px #000000' : '3px 3px 0px 0px #000000'}}
                   >
                     <button
-                      onClick={() => selectWorkflow(workflow)}
+                      onClick={() => handleSelectWorkflow(workflow)}
                       className="w-full text-left"
                     >
-                      <div className="font-semibold flex items-center pr-8 text-sm sm:text-base">
-                        🤖 {workflow.name}
+                      <div className="font-bold flex items-center pr-8 text-sm sm:text-base uppercase">
+                        {workflow.name}
                       </div>
-                      <div className="text-xs text-purple-600/70 mt-1">
-                        📊 {workflow.variables.length} variables
+                      <div className="text-xs font-medium mt-1">
+                        {workflow.variables.length} variables
                       </div>
                     </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        deleteWorkflow(workflow.id);
+                        handleDeleteWorkflow(workflow.id);
                       }}
-                      className="absolute top-2 right-2 p-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700 hover:bg-red-50"
+                      className="absolute top-2 right-2 p-1 border-2 border-brutal-black bg-brutal-red text-brutal-white opacity-0 group-hover:opacity-100 transition-opacity"
                       title="Delete workflow"
+                      style={{boxShadow: '2px 2px 0px 0px #000000'}}
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -332,41 +276,44 @@ function App() {
 
           {/* Mobile Tabs */}
           <div className="mb-6">
-            <nav className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 bg-white/50 backdrop-blur-lg p-2 rounded-2xl shadow-lg border border-white/20">
+            <nav className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 bg-brutal-white p-2 border-3 border-brutal-black" style={{boxShadow: '4px 4px 0px 0px #000000'}}>
               <button
                 onClick={() => setActiveTab('workflow')}
-                className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
+                className={`px-4 py-3 text-sm font-bold uppercase transition-all duration-150 flex items-center justify-center space-x-2 border-3 border-brutal-black ${
                   activeTab === 'workflow'
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg transform scale-105'
-                    : 'text-purple-600 hover:bg-purple-50 hover:scale-102'
+                    ? 'bg-brutal-yellow'
+                    : 'bg-brutal-white hover:bg-brutal-lime'
                 }`}
+                style={{boxShadow: activeTab === 'workflow' ? '3px 3px 0px 0px #000000' : '2px 2px 0px 0px #000000'}}
               >
                 <Database className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span>🛠️ Workflow Setup</span>
+                <span>Workflow</span>
               </button>
               <button
                 onClick={() => setActiveTab('image')}
-                className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
+                className={`px-4 py-3 text-sm font-bold uppercase transition-all duration-150 flex items-center justify-center space-x-2 border-3 border-brutal-black ${
                   activeTab === 'image'
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg transform scale-105'
-                    : 'text-purple-600 hover:bg-purple-50 hover:scale-102'
+                    ? 'bg-brutal-cyan'
+                    : 'bg-brutal-white hover:bg-brutal-cyan'
                 } ${!appState.currentWorkflow ? 'opacity-50 cursor-not-allowed' : ''}`}
+                style={{boxShadow: activeTab === 'image' ? '3px 3px 0px 0px #000000' : '2px 2px 0px 0px #000000'}}
                 disabled={!appState.currentWorkflow}
               >
                 <ImageIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span>📸 Image Analysis</span>
+                <span>Upload</span>
               </button>
               <button
                 onClick={() => setActiveTab('results')}
-                className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
+                className={`px-4 py-3 text-sm font-bold uppercase transition-all duration-150 flex items-center justify-center space-x-2 border-3 border-brutal-black ${
                   activeTab === 'results'
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg transform scale-105'
-                    : 'text-purple-600 hover:bg-purple-50 hover:scale-102'
+                    ? 'bg-brutal-magenta text-brutal-white'
+                    : 'bg-brutal-white hover:bg-brutal-magenta hover:text-brutal-white'
                 } ${!appState.currentImage ? 'opacity-50 cursor-not-allowed' : ''}`}
+                style={{boxShadow: activeTab === 'results' ? '3px 3px 0px 0px #000000' : '2px 2px 0px 0px #000000'}}
                 disabled={!appState.currentImage}
               >
                 <Zap className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span>✨ Results</span>
+                <span>Results</span>
               </button>
             </nav>
           </div>
@@ -376,7 +323,7 @@ function App() {
             {activeTab === 'workflow' && (
               <VariableManager
                 workflow={appState.currentWorkflow}
-                onUpdateWorkflow={updateCurrentWorkflow}
+                onUpdateWorkflow={handleUpdateCurrentWorkflow}
               />
             )}
 
@@ -384,9 +331,9 @@ function App() {
               <ImageUpload
                 workflow={appState.currentWorkflow}
                 apiSettings={appState.apiSettings}
-                onImageAnalyzed={setCurrentImage}
+                onImageAnalyzed={handleSetCurrentImage}
                 isProcessing={appState.isProcessing}
-                onProcessingChange={(isProcessing) => updateAppState({ isProcessing })}
+                onProcessingChange={setIsProcessing}
               />
             )}
 
@@ -395,7 +342,6 @@ function App() {
                 imageAnalysis={appState.currentImage}
                 apiSettings={appState.apiSettings}
                 onExport={(format) => {
-                  // TODO: Implement export functionality
                   console.log('Export requested:', format);
                 }}
               />
@@ -407,56 +353,57 @@ function App() {
         <div className="hidden lg:grid lg:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="card animate-in slide-in-from-left duration-500">
+            <div className="card">
               <div className="card-header">
-                <h2 className="card-title">🔥 Workflows</h2>
+                <h2 className="card-title">WORKFLOWS</h2>
                 <p className="card-description">
                   Create and manage your AI analysis workflows
                   {appState.workflows.length > 0 && (
-                    <span className="block text-xs text-green-600 mt-1">
-                      ✓ {appState.workflows.length} workflow{appState.workflows.length > 1 ? 's' : ''} saved locally
+                    <span className="inline-block ml-2 px-2 py-1 bg-brutal-lime border-2 border-brutal-black text-xs font-bold" style={{boxShadow: '2px 2px 0px 0px #000000'}}>
+                      {appState.workflows.length} SAVED
                     </span>
                   )}
                 </p>
               </div>
               <div className="card-content">
                 <button
-                  onClick={createNewWorkflow}
-                  className="btn btn-primary btn-md w-full mb-6 group"
+                  onClick={handleCreateNewWorkflow}
+                  className="btn btn-primary btn-md w-full mb-6"
                 >
-                  <Zap className="h-5 w-5 mr-2 group-hover:animate-bounce" />
-                  ✨ New Workflow
+                  <Zap className="h-5 w-5 mr-2" />
+                  NEW WORKFLOW
                 </button>
-                
+
                 <div className="space-y-3">
-                  {appState.workflows.map((workflow, index) => (
+                  {appState.workflows.map((workflow) => (
                     <div
                       key={workflow.id}
-                      className={`relative p-4 rounded-xl text-sm transition-all duration-300 group ${
+                      className={`relative p-4 text-sm transition-all duration-150 group border-3 border-brutal-black ${
                         appState.currentWorkflow?.id === workflow.id
-                          ? 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 shadow-lg scale-105'
-                          : 'hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 hover:shadow-md hover:scale-102'
+                          ? 'bg-brutal-cyan'
+                          : 'bg-brutal-white hover:bg-brutal-yellow'
                       }`}
-                      style={{animationDelay: `${index * 100}ms`}}
+                      style={{boxShadow: appState.currentWorkflow?.id === workflow.id ? '4px 4px 0px 0px #000000' : '3px 3px 0px 0px #000000'}}
                     >
                       <button
-                        onClick={() => selectWorkflow(workflow)}
+                        onClick={() => handleSelectWorkflow(workflow)}
                         className="w-full text-left"
                       >
-                        <div className="font-semibold flex items-center pr-8">
-                          🤖 {workflow.name}
+                        <div className="font-bold flex items-center pr-8 uppercase">
+                          {workflow.name}
                         </div>
-                        <div className="text-xs text-purple-600/70 mt-1">
-                          📊 {workflow.variables.length} variables
+                        <div className="text-xs font-medium mt-1">
+                          {workflow.variables.length} variables
                         </div>
                       </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          deleteWorkflow(workflow.id);
+                          handleDeleteWorkflow(workflow.id);
                         }}
-                        className="absolute top-2 right-2 p-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700 hover:bg-red-50"
+                        className="absolute top-2 right-2 p-1 border-2 border-brutal-black bg-brutal-red text-brutal-white opacity-0 group-hover:opacity-100 transition-opacity"
                         title="Delete workflow"
+                        style={{boxShadow: '2px 2px 0px 0px #000000'}}
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -471,41 +418,44 @@ function App() {
           <div className="lg:col-span-3">
             {/* Tabs */}
             <div className="mb-8">
-              <nav className="flex space-x-2 bg-white/50 backdrop-blur-lg p-2 rounded-2xl shadow-lg border border-white/20">
+              <nav className="flex space-x-2 bg-brutal-white p-2 border-3 border-brutal-black" style={{boxShadow: '4px 4px 0px 0px #000000'}}>
                 <button
                   onClick={() => setActiveTab('workflow')}
-                  className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center space-x-2 ${
+                  className={`px-6 py-3 text-sm font-bold uppercase transition-all duration-150 flex items-center space-x-2 border-3 border-brutal-black ${
                     activeTab === 'workflow'
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg transform scale-105'
-                      : 'text-purple-600 hover:bg-purple-50 hover:scale-102'
+                      ? 'bg-brutal-yellow'
+                      : 'bg-brutal-white hover:bg-brutal-lime'
                   }`}
+                  style={{boxShadow: activeTab === 'workflow' ? '3px 3px 0px 0px #000000' : '2px 2px 0px 0px #000000'}}
                 >
                   <Database className="h-5 w-5" />
-                  <span>🛠️ Workflow Setup</span>
+                  <span>Workflow</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('image')}
-                  className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center space-x-2 ${
+                  className={`px-6 py-3 text-sm font-bold uppercase transition-all duration-150 flex items-center space-x-2 border-3 border-brutal-black ${
                     activeTab === 'image'
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg transform scale-105'
-                      : 'text-purple-600 hover:bg-purple-50 hover:scale-102'
+                      ? 'bg-brutal-cyan'
+                      : 'bg-brutal-white hover:bg-brutal-cyan'
                   } ${!appState.currentWorkflow ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  style={{boxShadow: activeTab === 'image' ? '3px 3px 0px 0px #000000' : '2px 2px 0px 0px #000000'}}
                   disabled={!appState.currentWorkflow}
                 >
                   <ImageIcon className="h-5 w-5" />
-                  <span>📸 Image Analysis</span>
+                  <span>Upload</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('results')}
-                  className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center space-x-2 ${
+                  className={`px-6 py-3 text-sm font-bold uppercase transition-all duration-150 flex items-center space-x-2 border-3 border-brutal-black ${
                     activeTab === 'results'
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg transform scale-105'
-                      : 'text-purple-600 hover:bg-purple-50 hover:scale-102'
+                      ? 'bg-brutal-magenta text-brutal-white'
+                      : 'bg-brutal-white hover:bg-brutal-magenta hover:text-brutal-white'
                   } ${!appState.currentImage ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  style={{boxShadow: activeTab === 'results' ? '3px 3px 0px 0px #000000' : '2px 2px 0px 0px #000000'}}
                   disabled={!appState.currentImage}
                 >
                   <Zap className="h-5 w-5" />
-                  <span>✨ Results</span>
+                  <span>Results</span>
                 </button>
               </nav>
             </div>
@@ -515,7 +465,7 @@ function App() {
               {activeTab === 'workflow' && (
                 <VariableManager
                   workflow={appState.currentWorkflow}
-                  onUpdateWorkflow={updateCurrentWorkflow}
+                  onUpdateWorkflow={handleUpdateCurrentWorkflow}
                 />
               )}
 
@@ -523,9 +473,9 @@ function App() {
                 <ImageUpload
                   workflow={appState.currentWorkflow}
                   apiSettings={appState.apiSettings}
-                  onImageAnalyzed={setCurrentImage}
+                  onImageAnalyzed={handleSetCurrentImage}
                   isProcessing={appState.isProcessing}
-                  onProcessingChange={(isProcessing) => updateAppState({ isProcessing })}
+                  onProcessingChange={setIsProcessing}
                 />
               )}
 
@@ -534,7 +484,6 @@ function App() {
                   imageAnalysis={appState.currentImage}
                   apiSettings={appState.apiSettings}
                   onExport={(format) => {
-                    // TODO: Implement export functionality
                     console.log('Export requested:', format);
                   }}
                 />
@@ -542,7 +491,40 @@ function App() {
             </div>
           </div>
         </div>
-      </div>
+      </main>
+
+      {/* Footer with Credits */}
+      <footer className="relative z-10 bg-brutal-black text-brutal-white py-6 border-t-4 border-brutal-yellow mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-brutal-yellow border-3 border-brutal-white" style={{boxShadow: '3px 3px 0px 0px #FFFFFF'}}>
+                <ImageIcon className="h-5 w-5 text-brutal-black" />
+              </div>
+              <span className="font-black uppercase text-lg">FLUX <span className="text-brutal-magenta">Studio</span></span>
+            </div>
+
+            <div className="flex items-center space-x-2 text-sm font-bold">
+              <span>Made with</span>
+              <span className="text-brutal-red text-lg">♥</span>
+              <span>by</span>
+              <a
+                href="https://portafolio-centurion.pages.dev/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1 bg-brutal-cyan text-brutal-black border-2 border-brutal-white font-black uppercase hover:bg-brutal-yellow transition-colors"
+                style={{boxShadow: '2px 2px 0px 0px #FFFFFF'}}
+              >
+                Charly
+              </a>
+            </div>
+
+            <div className="text-xs font-medium opacity-70">
+              © {new Date().getFullYear()} All rights reserved
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
