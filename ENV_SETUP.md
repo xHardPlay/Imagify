@@ -24,7 +24,7 @@ Se ha actualizado la aplicación para usar variables de entorno (`.env`) en luga
 ## 📋 Variables de Entorno
 
 ```env
-VITE_GEMINI_API_KEY=AIzaSyAvhwjpR_BNveCxU_044Dnw5zFCKltW8Cc
+VITE_GEMINI_API_KEY=
 VITE_GEMINI_MODEL=gemini-1.5-flash
 VITE_MAX_TOKENS=2000
 VITE_TEMPERATURE=0.4
