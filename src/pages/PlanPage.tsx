@@ -14,19 +14,15 @@ import {
   ReactFlowProvider,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Search, Image, BookOpen, Sparkles, Plus, Trash2 } from 'lucide-react';
+import { Search, Image, Sparkles, Plus, Trash2, Video } from 'lucide-react';
 import AnalysisNode from '../components/nodes/AnalysisNode';
-import ImageGenNode from '../components/nodes/ImageGenNode';
-import StoryGenNode from '../components/nodes/StoryGenNode';
-import OutputNode from '../components/nodes/OutputNode';
+import GenNode from '../components/nodes/GenNode';
 import { PlanProvider } from '../contexts/PlanContext';
 
 // Define custom node types
 const nodeTypes = {
   analysis: AnalysisNode,
-  imageGen: ImageGenNode,
-  storyGen: StoryGenNode,
-  output: OutputNode,
+  gen: GenNode,
 };
 
 // Initial nodes for demo
@@ -41,6 +37,15 @@ const nodeTemplates = [
     description: 'Load analysis results',
     icon: Search,
     color: 'brutal-cyan',
+    enabled: true,
+  },
+  {
+    type: 'gen',
+    label: 'Gen',
+    description: 'AI text generation (stories, songs, etc)',
+    icon: Sparkles,
+    color: 'brutal-yellow',
+    enabled: true,
   },
   {
     type: 'imageGen',
@@ -48,20 +53,17 @@ const nodeTemplates = [
     description: 'Generate images with AI',
     icon: Image,
     color: 'brutal-magenta',
+    enabled: false,
+    comingSoon: true,
   },
   {
-    type: 'storyGen',
-    label: 'Story Gen',
-    description: 'Generate stories/text',
-    icon: BookOpen,
-    color: 'brutal-yellow',
-  },
-  {
-    type: 'output',
-    label: 'Output',
-    description: 'Final output node',
-    icon: Sparkles,
+    type: 'videoGen',
+    label: 'Video Gen',
+    description: 'Generate videos with AI',
+    icon: Video,
     color: 'brutal-lime',
+    enabled: false,
+    comingSoon: true,
   },
 ];
 
@@ -74,6 +76,12 @@ const PlanPageInner: React.FC = () => {
     (params: Connection) => setEdges((eds) => addEdge({ ...params, animated: true }, eds)),
     [setEdges]
   );
+
+  // Allow multiple connections to the same target handle
+  const isValidConnection = useCallback(() => {
+    // Allow multiple connections to 'variables' input handles
+    return true;
+  }, []);
 
   const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
     setSelectedNode(node);
@@ -136,16 +144,27 @@ const PlanPageInner: React.FC = () => {
         <div className="space-y-3">
           {nodeTemplates.map((template) => {
             const Icon = template.icon;
+            const isDisabled = !template.enabled;
             return (
               <button
                 key={template.type}
-                onClick={() => addNode(template.type)}
-                className={`w-full p-3 border-3 border-brutal-black bg-${template.color} hover:translate-x-0.5 hover:translate-y-0.5 transition-transform text-left`}
-                style={{ boxShadow: '3px 3px 0px 0px #000000' }}
+                onClick={() => template.enabled && addNode(template.type)}
+                disabled={isDisabled}
+                className={`w-full p-3 border-3 border-brutal-black text-left transition-transform ${
+                  isDisabled
+                    ? 'bg-gray-200 cursor-not-allowed opacity-60'
+                    : `bg-${template.color} hover:translate-x-0.5 hover:translate-y-0.5`
+                }`}
+                style={{ boxShadow: isDisabled ? '2px 2px 0px 0px #666666' : '3px 3px 0px 0px #000000' }}
               >
                 <div className="flex items-center space-x-2 mb-1">
                   <Icon className="h-5 w-5" />
                   <span className="font-bold uppercase text-sm">{template.label}</span>
+                  {template.comingSoon && (
+                    <span className="text-[9px] bg-brutal-black text-brutal-white px-1.5 py-0.5 font-bold">
+                      SOON
+                    </span>
+                  )}
                 </div>
                 <p className="text-xs opacity-80">{template.description}</p>
               </button>
@@ -203,6 +222,7 @@ const PlanPageInner: React.FC = () => {
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
           nodeTypes={nodeTypes}
+          isValidConnection={isValidConnection}
           fitView
           className="bg-gray-50"
         >

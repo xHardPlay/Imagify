@@ -77,10 +77,10 @@ const AnalysisNode = memo(({ id, selected, data }: NodeProps) => {
 
   return (
     <div
-      className={`min-w-[240px] max-w-[300px] bg-brutal-cyan border-3 border-brutal-black ${
+      className={`min-w-[240px] max-w-[300px] bg-brutal-cyan border-3 border-brutal-black transition-all ${
         selected ? 'ring-4 ring-brutal-magenta' : ''
-      }`}
-      style={{ boxShadow: '4px 4px 0px 0px #000000' }}
+      } ${isLoadingAnalyses ? 'node-generating-cyan' : ''}`}
+      style={{ boxShadow: isLoadingAnalyses ? undefined : '4px 4px 0px 0px #000000' }}
     >
       {/* Header */}
       <div className="bg-brutal-black text-brutal-white px-3 py-2 flex items-center justify-between">

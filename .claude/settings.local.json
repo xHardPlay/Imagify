@@ -14,7 +14,9 @@
       "Bash(npm run test:run:*)",
       "Bash(npx playwright install:*)",
       "Bash(npx playwright test:*)",
-      "Bash(del cookies.txt)"
+      "Bash(del cookies.txt)",
+      "Bash(cd:*)",
+      "Bash(timeout:*)"
     ]
   }
 }
